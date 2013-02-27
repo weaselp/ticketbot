@@ -35,7 +35,8 @@ import supybot.ircmsgs as ircmsgs
 import supybot.ircutils as ircutils
 import supybot.callbacks as callbacks
 
-from ticketconfig import TicketConfig
+import ticketconfig
+reload(ticketconfig)
 
 
 class Ticket(callbacks.Plugin):
@@ -43,7 +44,7 @@ class Ticket(callbacks.Plugin):
         self.__parent = super(Ticket, self)
         self.__parent.__init__(irc)
 
-        self._config = TicketConfig()
+        self._config = ticketconfig.TicketConfig()
 
         self.providers = self._config.providers
         self.channels = self._config.channels
