@@ -35,7 +35,10 @@ import supybot.ircmsgs as ircmsgs
 import supybot.ircutils as ircutils
 import supybot.callbacks as callbacks
 
-import ticketconfig
+try:
+    import ticketconfig_private as ticketconfig
+except ImportError:
+    import ticketconfig
 reload(ticketconfig)
 
 
