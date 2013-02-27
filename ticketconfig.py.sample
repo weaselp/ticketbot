@@ -44,6 +44,10 @@ class TicketConfig:
             'https://github.com/TheTorProject/ooni-probe/pull/',
             h.ReGroupFixup('.*?(.*) . Pull Request #[0-9]+ . TheTorProject/ooni-probe . GitHub$', "PR")
             )
+        self.providers['bugs.debian.org'] = h.TicketHtmlTitleProvider(
+            'http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=',
+            h.ReGroupFixup('#[0-9]+ - (.*) - Debian Bug report logs$')
+            )
 
         self.channels = {}
         for tor in ('#tor-test', '#ooni', '#nottor', '#tor-dev', '#tor'):
@@ -53,5 +57,6 @@ class TicketConfig:
 
         self.channels['#ooni'].addProvider('(?<!\w)PR#([0-9]+)(?:(?=\W)|$)', self.providers['github.com-tor-ooni-probe-pull'])
         self.channels['#tor-test'].addProvider('(?<!\w)[Pp][Rr]#([0-9]+)(?:(?=\W)|$)', self.providers['github.com-tor-ooni-probe-pull'])
+        self.channels['#tor-test'].addProvider('(?<!\w)#([0-9]+)(?:(?=\W)|$)', self.providers['bugs.debian.org'])
 
 # vim:set shiftwidth=4 softtabstop=4 expandtab:
