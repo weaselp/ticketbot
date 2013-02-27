@@ -28,25 +28,26 @@
 
 ###
 
-from tickethelpers import *
+import tickethelpers as h
+reload(h)
 
 class TicketConfig:
     def __init__(self):
         self.providers = {}
-        self.providers['trac.torproject.org'] = TicketHtmlTitleProvider(
+        self.providers['trac.torproject.org'] = h.TicketHtmlTitleProvider(
             'https://trac.torproject.org/projects/tor/ticket/',
-            ReGroupFixup('.*?\((.*)\).*? Tor Bug Tracker & Wiki$')
+            h.ReGroupFixup('.*?\((.*)\).*? Tor Bug Tracker & Wiki$')
             )
-        self.providers['proposal.torproject.org'] = TorProposalProvider(
+        self.providers['proposal.torproject.org'] = h.TorProposalProvider(
             fixup=lambda i,x: "Prop#%s: %s"%(i,x) )
-        self.providers['github.com-tor-ooni-probe-pull'] = TicketHtmlTitleProvider(
+        self.providers['github.com-tor-ooni-probe-pull'] = h.TicketHtmlTitleProvider(
             'https://github.com/TheTorProject/ooni-probe/pull/',
-            ReGroupFixup('.*?(.*) . Pull Request #[0-9]+ . TheTorProject/ooni-probe . GitHub$', "PR")
+            h.ReGroupFixup('.*?(.*) . Pull Request #[0-9]+ . TheTorProject/ooni-probe . GitHub$', "PR")
             )
 
         self.channels = {}
         for tor in ('#tor-test', '#ooni', '#nottor', '#tor-dev', '#tor'):
-            self.channels[tor] = TicketChannel()
+            self.channels[tor] = h.TicketChannel()
             self.channels[tor].addProvider('(?<!\w)(?:#|https://trac.torproject.org/projects/tor/ticket/)([0-9]+)(?:(?=\W)|$)', self.providers['trac.torproject.org'])
             self.channels[tor].addProvider('(?<!\w)[Pp]rop#([0-9]+)(?:(?=\W)|$)', self.providers['proposal.torproject.org'])
 
