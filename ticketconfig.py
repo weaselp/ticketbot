@@ -33,7 +33,7 @@ reload(h)
 
 class TicketConfig:
     def _add(self, ch, *args):
-        if not self in self.channels:
+        if not ch in self.channels:
             self.channels[ch] = h.TicketChannel()
         self.channels[ch].addProvider(*args)
 
