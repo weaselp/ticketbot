@@ -32,6 +32,11 @@ import tickethelpers as h
 reload(h)
 
 class TicketConfig:
+    def _add(self, ch, *args):
+        if not self in self.channels:
+            self.channels[ch] = h.TicketChannel()
+        self.channels[ch].addProvider(*args)
+
     def __init__(self):
         self.providers = {}
         self.providers['trac.torproject.org'] = h.TicketHtmlTitleProvider(
@@ -48,15 +53,18 @@ class TicketConfig:
             'http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=',
             h.ReGroupFixup('#[0-9]+ - (.*) - Debian Bug report logs$')
             )
+        self.providers['rt.debian.org'] = h.TicketRTProvider(
+            '~/.rtrc-debian',
+            h.ReGroupFixup('[0-9]+: *(.*)$', 'RT')
+            )
 
         self.channels = {}
         for tor in ('#tor-test', '#ooni', '#nottor', '#tor-dev', '#tor'):
-            self.channels[tor] = h.TicketChannel()
-            self.channels[tor].addProvider('(?<!\w)(?:#|https://trac.torproject.org/projects/tor/ticket/)([0-9]+)(?:(?=\W)|$)', self.providers['trac.torproject.org'])
-            self.channels[tor].addProvider('(?<!\w)[Pp]rop#([0-9]+)(?:(?=\W)|$)', self.providers['proposal.torproject.org'])
+            self._add(tor, '(?<!\w)(?:#|https://trac.torproject.org/projects/tor/ticket/)([0-9]+)(?:(?=\W)|$)', self.providers['trac.torproject.org'])
+            self._add(tor, '(?<!\w)[Pp]rop#([0-9]+)(?:(?=\W)|$)', self.providers['proposal.torproject.org'])
 
-        self.channels['#ooni'].addProvider('(?<!\w)PR#([0-9]+)(?:(?=\W)|$)', self.providers['github.com-tor-ooni-probe-pull'])
-        self.channels['#tor-test'].addProvider('(?<!\w)[Pp][Rr]#([0-9]+)(?:(?=\W)|$)', self.providers['github.com-tor-ooni-probe-pull'])
-        self.channels['#tor-test'].addProvider('(?<!\w)#([0-9]+)(?:(?=\W)|$)', self.providers['bugs.debian.org'])
+        self._add('#ooni', '(?<!\w)PR#([0-9]+)(?:(?=\W)|$)', self.providers['github.com-tor-ooni-probe-pull'])
+        self._add('#tor-test', '(?<!\w)[Pp][Rr]#([0-9]+)(?:(?=\W)|$)', self.providers['github.com-tor-ooni-probe-pull'])
+        self._add('#tor-test', '(?<!\w)#([0-9]+)(?:(?=\W)|$)', self.providers['bugs.debian.org'])
 
 # vim:set shiftwidth=4 softtabstop=4 expandtab:
