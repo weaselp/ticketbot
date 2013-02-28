@@ -132,7 +132,8 @@ class TicketRTProvider(BaseProvider):
             title = subprocess.check_output(['rt', 'ls', '-i', str(ticketnumber), '-s'], env={ 'RTCONFIG': self.rtrc } )
         except subprocess.CalledProcessError as e:
             raise IndexError(e)
-        print title
+        if title == "No matching results.\n":
+            raise IndexError(title)
 
         return title
 
