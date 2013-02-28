@@ -65,6 +65,6 @@ class TicketConfig:
 
         self._add('#ooni', '(?<!\w)(?:PR#|https://github.com/TheTorProject/ooni-probe/pull/)([0-9]+)(?:(?=\W)|$)', self.providers['github.com-tor-ooni-probe-pull'])
         self._add('#tor-test', '(?<!\w)(?:PR#|https://github.com/TheTorProject/ooni-probe/pull/)([0-9]+)(?:(?=\W)|$)', self.providers['github.com-tor-ooni-probe-pull'])
-        self._add('#tor-test', '(?<!\w)#([0-9]{2,}+)(?:(?=\W)|$)', self.providers['bugs.debian.org'])
+        self._add('#tor-test', '(?<!\w)#([0-9]{2,})(?:(?=\W)|$)', self.providers['bugs.debian.org'])
 
 # vim:set shiftwidth=4 softtabstop=4 expandtab:
