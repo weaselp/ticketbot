@@ -60,11 +60,11 @@ class TicketConfig:
 
         self.channels = {}
         for tor in ('#tor-test', '#ooni', '#nottor', '#tor-dev', '#tor'):
-            self._add(tor, '(?<!\w)(?:#|https://trac.torproject.org/projects/tor/ticket/)([0-9]+)(?:(?=\W)|$)', self.providers['trac.torproject.org'])
+            self._add(tor, '(?<!\w)(?:#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{2,})(?:(?=\W)|$)', self.providers['trac.torproject.org'])
             self._add(tor, '(?<!\w)[Pp]rop#([0-9]+)(?:(?=\W)|$)', self.providers['proposal.torproject.org'])
 
         self._add('#ooni', '(?<!\w)(?:PR#|https://github.com/TheTorProject/ooni-probe/pull/)([0-9]+)(?:(?=\W)|$)', self.providers['github.com-tor-ooni-probe-pull'])
         self._add('#tor-test', '(?<!\w)(?:PR#|https://github.com/TheTorProject/ooni-probe/pull/)([0-9]+)(?:(?=\W)|$)', self.providers['github.com-tor-ooni-probe-pull'])
-        self._add('#tor-test', '(?<!\w)#([0-9]+)(?:(?=\W)|$)', self.providers['bugs.debian.org'])
+        self._add('#tor-test', '(?<!\w)#([0-9]{2,}+)(?:(?=\W)|$)', self.providers['bugs.debian.org'])
 
 # vim:set shiftwidth=4 softtabstop=4 expandtab:
