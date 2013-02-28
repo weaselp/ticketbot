@@ -59,7 +59,6 @@ class Ticket(callbacks.Plugin):
     def doPrivmsg(self, irc, msg):
         if irc.isChannel(msg.args[0]):
             (tgt, payload) = msg.args
-            print "foo"
             if tgt in self.channels:
                 for line in self._processLine(self.channels[tgt], payload):
                     irc.queueMsg(ircmsgs.notice(tgt, line.encode('utf-8')))
