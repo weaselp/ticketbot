@@ -29,11 +29,26 @@
 ###
 
 import BeautifulSoup
+import os
 import re
+import subprocess
 import time
 import urllib2
 
-class TicketHtmlTitleProvider():
+class BaseProvider():
+    def __init__(self, fixup=None):
+        self.fixup = fixup
+
+    def __getitem__(self, ticketnumber):
+        title = self._gettitle(ticketnumber)
+        title = re.sub('\s+', ' ', title).strip()
+
+        if self.fixup is not None:
+            title = self.fixup(ticketnumber, title)
+
+        return title
+
+class TicketHtmlTitleProvider(BaseProvider):
     """A ticket information provider that extracts the title
        tag from html pages at $url$ticketnumber."""
     def __init__(self, url, fixup=None):
@@ -44,10 +59,11 @@ class TicketHtmlTitleProvider():
         :param fixup a function that takes a string (the title) and returns
                      another string we like better for printing.
         """
-        self.url = url
-        self.fixup = fixup
+        BaseProvider.__init__(self, fixup)
 
-    def __getitem__(self, ticketnumber):
+        self.url = url
+
+    def _gettitle(self, ticketnumber):
         try:
             response = urllib2.urlopen('%s%s'%(self.url, ticketnumber))
         except urllib2.HTTPError as e:
@@ -60,16 +76,11 @@ class TicketHtmlTitleProvider():
 
         b = BeautifulSoup.BeautifulSoup(data, convertEntities=BeautifulSoup.BeautifulSoup.HTML_ENTITIES)
         title = b.find('title').contents[0]
-        title = re.sub('\s+', ' ', title).strip()
-
-        if self.fixup is not None:
-            title = self.fixup(ticketnumber, title)
-
         return title
 
-class TorProposalProvider():
+class TorProposalProvider(BaseProvider):
     def __init__(self, fixup=None):
-        self.fixup = fixup
+        BaseProvider.__init__(self, fixup)
 
         self.url = 'https://gitweb.torproject.org/torspec.git/blob_plain/HEAD:/proposals/000-index.txt'
 
@@ -94,7 +105,7 @@ class TorProposalProvider():
         self.expire = time.time() + 7200
 
 
-    def __getitem__(self, ticketnumber):
+    def _gettitle(self, ticketnumber):
         self.update()
         if self.data is None:
             raise IndexError("No proposal index available.")
@@ -104,10 +115,27 @@ class TorProposalProvider():
             raise IndexError("Proposal not found.")
 
         title = m.group(1)
-        if self.fixup is not None:
-            title = self.fixup(ticketnumber, title)
 
         return title
+
+class TicketRTProvider(BaseProvider):
+    """A ticket information provider that returns the title
+       of a request-tracker ticket."""
+    def __init__(self, rtconfigpath, fixup=None):
+        BaseProvider.__init__(self, fixup)
+
+        self.rtrc = os.path.abspath( os.path.expanduser( rtconfigpath) )
+
+    def _gettitle(self, ticketnumber):
+        ticketnumber = int(ticketnumber)
+        try:
+            title = subprocess.check_output(['rt', 'ls', '-i', str(ticketnumber), '-s'], env={ 'RTCONFIG': self.rtrc } )
+        except subprocess.CalledProcessError as e:
+            raise IndexError(e)
+        print title
+
+        return title
+
 
 class TicketChannel():
     """Dispatcher and rate limiter for per-channel ticketing info"""
