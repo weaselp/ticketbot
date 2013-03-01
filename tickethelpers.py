@@ -141,7 +141,7 @@ class TicketRTProvider(BaseProvider):
 class TicketChannel():
     """Dispatcher and rate limiter for per-channel ticketing info"""
 
-    def __init__(self, minRepeat=900):
+    def __init__(self, minRepeat=1800):
         self.providers = []
         self.minRepeat = minRepeat
         self.lastSent = {}
