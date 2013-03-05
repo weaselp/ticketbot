@@ -57,6 +57,10 @@ class TicketConfig:
             '~/.rtrc-debian',
             h.ReGroupFixup('[0-9]+: *(.*)$', 'RT')
             )
+        self.providers['bts.grml.org'] = h.TicketHtmlTitleProvider(
+            'http://bts.grml.org/grml/issue',
+            h.ReGroupFixup('Issue [0-9]+: (.*) - GRML issue tracker$')
+            )
 
         self.channels = {}
         for tor in ('#tor-test', '#ooni', '#nottor', '#tor-dev', '#tor'):
@@ -66,5 +70,6 @@ class TicketConfig:
         self._add('#ooni', '(?<!\w)(?:PR#|https://github.com/TheTorProject/ooni-probe/pull/)([0-9]+)(?:(?=\W)|$)', self.providers['github.com-tor-ooni-probe-pull'])
         self._add('#tor-test', '(?<!\w)(?:PR#|https://github.com/TheTorProject/ooni-probe/pull/)([0-9]+)(?:(?=\W)|$)', self.providers['github.com-tor-ooni-probe-pull'])
         self._add('#tor-test', '(?<!\w)#([0-9]{2,})(?:(?=\W)|$)', self.providers['bugs.debian.org'])
+        self._add('#tor-test', '(?<!\w)grml#([0-9]{2,})(?:(?=\W)|$)', self.providers['bts.grml.org'])
 
 # vim:set shiftwidth=4 softtabstop=4 expandtab:
