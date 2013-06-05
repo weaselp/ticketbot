@@ -61,18 +61,22 @@ class TicketConfig:
             'http://bts.grml.org/grml/issue',
             h.ReGroupFixup('Issue [0-9]+: (.*) - GRML issue tracker$')
             )
+        self.providers['munin-monitoring.org'] = h.TicketHtmlTitleProvider(
+            'http://munin-monitoring.org/ticket/',
+            h.ReGroupFixup('.*?\((.*)\).*? Munin$')
+            )
 
         self.channels = {}
-        for tor in ('#tor-test', '#ooni', '#nottor', '#tor-dev', '#tor'):
+        for tor in ('#ooni', '#nottor', '#tor-dev', '#tor'):
             self._add(tor, '(?<!\w)(?:#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{4,})(?:(?=\W)|$)', self.providers['trac.torproject.org'])
             self._add(tor, '(?<!\w)[Pp]rop#([0-9]+)(?:(?=\W)|$)', self.providers['proposal.torproject.org'])
 
         self._add('#ooni', '(?<!\w)(?:PR#|https://github.com/TheTorProject/ooni-probe/pull/)([0-9]+)(?:(?=\W)|$)', self.providers['github.com-tor-ooni-probe-pull'])
-        self._add('#tor-test', '(?<!\w)(?:PR#|https://github.com/TheTorProject/ooni-probe/pull/)([0-9]+)(?:(?=\W)|$)', self.providers['github.com-tor-ooni-probe-pull'])
-        self._add('#tor-test', '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)', self.providers['bugs.debian.org'])
-        self._add('#tor-test', '(?<!\w)grml#([0-9]{2,})(?:(?=\W)|$)', self.providers['bts.grml.org'])
 
-        for ch in ('#munin',):
-            self._add(ch, '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)', self.providers['bugs.debian.org'])
+        self._add('#munin', '(?<!\w)[dD]eb(?:ian)?#([0-9]{4,})(?:(?=\W)|$)', self.providers['bugs.debian.org'])
+        self._add('#munin', '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)', self.providers['munin-monitoring.org'])
+
+        self._add('#tor-test', '(?<!\w)[dD]eb(?:ian)?#([0-9]{4,})(?:(?=\W)|$)', self.providers['bugs.debian.org'])
+        self._add('#tor-test', '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)', self.providers['munin-monitoring.org'])
 
 # vim:set shiftwidth=4 softtabstop=4 expandtab:
