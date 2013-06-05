@@ -66,6 +66,11 @@ class TicketConfig:
             h.ReGroupFixup('.*?\((.*)\).*? Munin$')
             )
 
+        self.providers['launchpad.net/ubuntu'] = h.TicketHtmlTitleProvider(
+            'https://bugs.launchpad.net/ubuntu/+bug/',
+            h.ReGroupFixup('Bug #[0-9]+ "(.*)" : Bugs :')
+            )
+
         self.channels = {}
         for tor in ('#ooni', '#nottor', '#tor-dev', '#tor'):
             self._add(tor, '(?<!\w)(?:#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{4,})(?:(?=\W)|$)', self.providers['trac.torproject.org'])
@@ -74,6 +79,7 @@ class TicketConfig:
         self._add('#ooni', '(?<!\w)(?:PR#|https://github.com/TheTorProject/ooni-probe/pull/)([0-9]+)(?:(?=\W)|$)', self.providers['github.com-tor-ooni-probe-pull'])
 
         self._add('#munin', '(?<!\w)[dD]eb(?:ian)?#([0-9]{4,})(?:(?=\W)|$)', self.providers['bugs.debian.org'])
+        self._add('#munin', '(?<!\w)[uU]bu(?:ntu)?#([0-9]{4,})(?:(?=\W)|$)', self.providers['launchpad.net/ubuntu'])
         self._add('#munin', '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)', self.providers['munin-monitoring.org'])
 
         self._add('#tor-test', '(?<!\w)[dD]eb(?:ian)?#([0-9]{4,})(?:(?=\W)|$)', self.providers['bugs.debian.org'])
