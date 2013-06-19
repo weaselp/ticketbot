@@ -66,6 +66,11 @@ class TicketConfig:
             h.ReGroupFixup('.*?\((.*)\).*? Munin$')
             )
 
+        self.providers['bugzilla.redhat.com'] = h.TicketHtmlTitleProvider(
+            'https://bugzilla.redhat.com/show_bug.cgi?id=',
+            h.ReGroupFixup('Bug [0-9]+ .ndash; (.*)$')
+            )
+
         self.channels = {}
         for tor in ('#ooni', '#nottor', '#tor-dev', '#tor'):
             self._add(tor, '(?<!\w)(?:#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{4,})(?:(?=\W)|$)', self.providers['trac.torproject.org'])
@@ -75,6 +80,7 @@ class TicketConfig:
 
         self._add('#munin', '(?<!\w)[dD]eb(?:ian)?#([0-9]{4,})(?:(?=\W)|$)', self.providers['bugs.debian.org'])
         self._add('#munin', '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)', self.providers['munin-monitoring.org'])
+        self._add('#munin', '(?<!\w)[rh]?#([0-9]{4,})(?:(?=\W)|$)', self.providers['bugzilla.redhat.com'])
 
         self._add('#tor-test', '(?<!\w)[dD]eb(?:ian)?#([0-9]{4,})(?:(?=\W)|$)', self.providers['bugs.debian.org'])
         self._add('#tor-test', '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)', self.providers['munin-monitoring.org'])
