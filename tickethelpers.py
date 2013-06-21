@@ -36,8 +36,13 @@ import time
 import urllib2
 
 class BaseProvider():
-    def __init__(self, fixup=None):
+    def __init__(self, fixup=None, prefix=None, default_re=None):
         self.fixup = fixup
+        self.prefix = prefix
+        if default_re is None and self.prefix is not None:
+            self.re = r'(?i)(?<!\w)'+self.prefix+r'#([0-9]{2,})(?:(?=\W)|$)'
+        else:
+            self.re = default_re
 
     def __getitem__(self, ticketnumber):
         title = self._gettitle(ticketnumber)
@@ -45,13 +50,20 @@ class BaseProvider():
 
         if self.fixup is not None:
             title = self.fixup(ticketnumber, title)
+        if self.prefix is not None:
+            title = self.prefix + title
 
         return title
+
+    def matches(self, msg):
+        if self.prefix is None: return
+
+        return re.findall(self.re, msg)
 
 class TicketHtmlTitleProvider(BaseProvider):
     """A ticket information provider that extracts the title
        tag from html pages at $url$ticketnumber."""
-    def __init__(self, url, fixup=None):
+    def __init__(self, url, fixup=None, prefix=None, default_re=None):
         """Constructs a ticket html title provider.
 
         :param url The base url where to find tickets.  The document at
@@ -59,7 +71,7 @@ class TicketHtmlTitleProvider(BaseProvider):
         :param fixup a function that takes a string (the title) and returns
                      another string we like better for printing.
         """
-        BaseProvider.__init__(self, fixup)
+        BaseProvider.__init__(self, fixup, prefix, default_re)
 
         self.url = url
 
@@ -79,8 +91,8 @@ class TicketHtmlTitleProvider(BaseProvider):
         return title
 
 class TorProposalProvider(BaseProvider):
-    def __init__(self, fixup=None):
-        BaseProvider.__init__(self, fixup)
+    def __init__(self, fixup=None, prefix=None, default_re=None):
+        BaseProvider.__init__(self, fixup, prefix, default_re)
 
         self.url = 'https://gitweb.torproject.org/torspec.git/blob_plain/HEAD:/proposals/000-index.txt'
 
@@ -121,8 +133,8 @@ class TorProposalProvider(BaseProvider):
 class TicketRTProvider(BaseProvider):
     """A ticket information provider that returns the title
        of a request-tracker ticket."""
-    def __init__(self, rtconfigpath, fixup=None):
-        BaseProvider.__init__(self, fixup)
+    def __init__(self, rtconfigpath, fixup=None, prefix=None, default_re=None):
+        BaseProvider.__init__(self, fixup, prefix, default_re)
 
         self.rtrc = os.path.abspath( os.path.expanduser( rtconfigpath) )
 
@@ -152,7 +164,8 @@ class TicketChannel():
 
     def doPrivmsg(self, msg):
         for p in self.providers:
-            matches = re.findall(p['re'], msg)
+            matches = p['provider'].matches(msg)
+            if p['re'] is not None: matches += re.findall(p['re'], msg)
             for m in matches:
                 try:
                     item = p['provider'][m]
@@ -167,14 +180,12 @@ class TicketChannel():
                 yield item
 
 class ReGroupFixup:
-    def __init__(self, groupre, prefix=None):
+    def __init__(self, groupre):
         self.groupre = groupre
-        self.prefix = prefix
 
     def __call__(self, i, x):
         m = re.match(self.groupre, x)
         if m and len(m.groups()) > 0: x = m.group(1)
-        prefix = self.prefix if self.prefix is not None else ""
-        return "%s#%s: %s"%(prefix, i, x)
+        return "#%s: %s"%(i, x)
 
 # vim:set shiftwidth=4 softtabstop=4 expandtab:
