@@ -67,11 +67,11 @@ class TicketConfig:
             )
         self.providers['launchpad.net/ubuntu'] = h.TicketHtmlTitleProvider(
             'https://bugs.launchpad.net/ubuntu/+bug/',
-            h.ReGroupFixup('Bug #[0-9]+ "(.*)" : Bugs :')
+            h.ReGroupFixup('Bug #[0-9]+ .(.*). : Bugs :')
             )
         self.providers['bugzilla.redhat.com'] = h.TicketHtmlTitleProvider(
             'https://bugzilla.redhat.com/show_bug.cgi?id=',
-            h.ReGroupFixup('Bug [0-9]+ .ndash; (.*)$')
+            h.ReGroupFixup('Bug [0-9]+ . (.*)$')
             )
 
         self.channels = {}
