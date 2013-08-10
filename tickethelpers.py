@@ -165,6 +165,7 @@ class TicketChannel():
     def doPrivmsg(self, msg):
         for p in self.providers:
             matches = p['provider'].matches(msg)
+            if matches is None: matches = []
             if p['re'] is not None: matches += re.findall(p['re'], msg)
             for m in matches:
                 try:
