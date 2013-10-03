@@ -82,6 +82,11 @@ class TicketConfig:
             h.ReGroupFixup('Bug [0-9]+ . (.*)$'),
             'redhat'
             )
+        self.providers['labs.riseup.net'] = h.TicketHtmlTitleProvider(
+            'https://labs.riseup.net/code/issues/',
+            h.ReGroupFixup('[^#]+#[0-9]+: (.*)$'),
+            'Tails'
+            )
 
         self.channels = {}
         for tor in ('#ooni', '#nottor', '#tor-dev', '#tor'):
