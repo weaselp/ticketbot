@@ -100,6 +100,10 @@ class TicketConfig:
         self._add('#munin', '(?<!\w)[rR]#([0-9]{4,})(?:(?=\W)|$)', self.providers['bugzilla.redhat.com'])
         self._add('#munin', '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)', self.providers['munin-monitoring.org'])
 
+        self._add('#tails', '(?<!\w)(?:#|https://labs.riseup.net/code/issues/)([0-9]{4,})(?:(?=\W)|$)', self.providers['labs.riseup.net'])
+        self._add('#tails', '(?<!\w)(?:[tT]or#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{4,})(?:(?=\W)|$)', self.providers['trac.torproject.org'])
+        self._add('#tails', '(?<!\w)[dD]eb(?:ian)?#([0-9]{4,})(?:(?=\W)|$)', self.providers['bugs.debian.org'])
+
         self._add('#tor-test', '(?<!\w)[dD]#([0-9]{4,})(?:(?=\W)|$)', self.providers['bugs.debian.org'])
         self._add('#tor-test', '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)', self.providers['munin-monitoring.org'])
         self._add('#tor-test', None, self.providers['trac.torproject.org'])
