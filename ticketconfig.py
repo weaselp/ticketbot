@@ -91,7 +91,7 @@ class TicketConfig:
 
         self.channels = {}
         for tor in ('#ooni', '#nottor', '#tor-dev', '#tor'):
-            self._add(tor, '(?<!\w)(?:#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{4,})(?:(?=\W)|$)', self.providers['trac.torproject.org'])
+            self._add(tor, '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)', self.providers['trac.torproject.org'])
             self._add(tor, '(?<!\w)[Pp]rop#([0-9]+)(?:(?=\W)|$)', self.providers['proposal.torproject.org'])
 
         self._add('#ooni', '(?<!\w)(?:PR#|https://github.com/TheTorProject/ooni-probe/pull/)([0-9]+)(?:(?=\W)|$)', self.providers['github.com-tor-ooni-probe-pull'])
@@ -103,7 +103,7 @@ class TicketConfig:
 
         for tails in ('#tails', '#tails-dev'):
             self._add(tails, '(?<!\w)(?:#|https://labs.riseup.net/code/issues/)([0-9]{4,})(?:(?=\W)|$)', self.providers['labs.riseup.net'])
-            self._add(tails, '(?<!\w)(?:[tT]or#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{4,})(?:(?=\W)|$)', self.providers['trac.torproject.org'])
+            self._add(tails, None, self.providers['trac.torproject.org'])
             self._add(tails, '(?<!\w)[dD]eb(?:ian)?#([0-9]{4,})(?:(?=\W)|$)', self.providers['bugs.debian.org'])
 
         self._add('#tor-test', '(?<!\w)[dD]#([0-9]{4,})(?:(?=\W)|$)', self.providers['bugs.debian.org'])
