@@ -85,7 +85,7 @@ class TicketConfig:
             )
         self.providers['labs.riseup.net'] = h.TicketHtmlTitleProvider(
             'https://labs.riseup.net/code/issues/',
-            h.ReGroupFixup('[^#]+#[0-9]+: (.*)$'),
+            h.ReGroupFixup('[^#]+#[0-9]+: (.*) - RiseupLabs Code Repository$'),
             'Tails'
             )
 
