@@ -104,7 +104,7 @@ class TicketConfig:
         for tails in ('#tails', '#tails-dev'):
             self._add(tails, '(?<!\w)(?:#|https://labs.riseup.net/code/issues/)([0-9]{4,})(?:(?=\W)|$)', self.providers['labs.riseup.net'])
             self._add(tails, None, self.providers['trac.torproject.org'])
-            self._add(tails, '(?<!\w)[dD]eb(?:ian)?#([0-9]{4,})(?:(?=\W)|$)', self.providers['bugs.debian.org'])
+            self._add(tails, None, self.providers['bugs.debian.org'])
 
         self._add('#tor-test', '(?<!\w)[dD]#([0-9]{4,})(?:(?=\W)|$)', self.providers['bugs.debian.org'])
         self._add('#tor-test', '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)', self.providers['munin-monitoring.org'])
