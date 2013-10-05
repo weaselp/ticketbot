@@ -42,7 +42,8 @@ class TicketConfig:
         self.providers['trac.torproject.org'] = h.TicketHtmlTitleProvider(
             'https://trac.torproject.org/projects/tor/ticket/',
             h.ReGroupFixup('.*?\((.*)\).*? Tor Bug Tracker & Wiki$'),
-            'tor'
+            'tor',
+            r'(?<!\w)(?:[tT]or#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{4,})(?:(?=\W)|$)'
             )
         self.providers['proposal.torproject.org'] = h.TorProposalProvider(
             fixup=lambda i,x: "Prop#%s: %s"%(i,x) )
