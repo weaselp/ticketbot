@@ -90,7 +90,7 @@ class TicketConfig:
             )
 
         self.channels = {}
-        for tor in ('#ooni', '#nottor', '#tor-dev', '#tor'):
+        for tor in ('#ooni', '#nottor', '#tor-dev', '#tor', '#tor-www'):
             self._add(tor, '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)', self.providers['trac.torproject.org'])
             self._add(tor, '(?<!\w)[Pp]rop#([0-9]+)(?:(?=\W)|$)', self.providers['proposal.torproject.org'])
 
