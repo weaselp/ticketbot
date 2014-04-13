@@ -110,9 +110,10 @@ class TicketConfig:
         self._add('#tor-test', '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)', self.providers['munin-monitoring.org'])
         self._add('#tor-test', None, self.providers['trac.torproject.org'])
 
-        self._add('#grml', '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)', self.providers['bugs.debian.org'])
         self._add('#grml', '(?<!\w)(?:[gG]|issue)([0-9]{4,})(?:(?=\W)|$)', self.providers['bts.grml.org'])
 
-        self._add('#debian-perl', '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)', self.providers['bugs.debian.org'])
+        # debian
+        for ch in ('#debian-perl', '#grml', '#debian-qa'):
+            self._add(ch,        '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)', self.providers['bugs.debian.org'])
 
 # vim:set shiftwidth=4 softtabstop=4 expandtab:
