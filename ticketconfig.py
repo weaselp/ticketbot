@@ -113,7 +113,7 @@ class TicketConfig:
         self._add('#grml', '(?<!\w)(?:[gG]|issue)([0-9]{4,})(?:(?=\W)|$)', self.providers['bts.grml.org'])
 
         # debian
-        for ch in ('#debian-perl', '#grml', '#debian-qa'):
+        for ch in ('#debian-perl', '#grml', '#debian-qa', '#debian-devel'):
             self._add(ch,        '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)', self.providers['bugs.debian.org'])
 
 # vim:set shiftwidth=4 softtabstop=4 expandtab:
