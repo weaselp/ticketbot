@@ -43,6 +43,7 @@ class TicketConfig:
             'https://trac.torproject.org/projects/tor/ticket/',
             h.ReGroupFixup('.*?\((.*)\).*? Tor Bug Tracker & Wiki$'),
             prefix='tor',
+            postfix=' - https://bugs.torproject.org/%s',
             default_re=r'(?<!\w)(?:[tT]or#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{4,})(?:(?=\W)|$)'
             )
         self.providers['proposal.torproject.org'] = h.TorProposalProvider(
@@ -56,6 +57,7 @@ class TicketConfig:
             'http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=',
             h.ReGroupFixup('#[0-9]+ - (.*) - Debian Bug report logs$'),
             prefix='Debian',
+            postfix=' - https://bugs.debian.org/%s',
             default_re=r'(?i)(?<!\w)Deb(?:ian)?#([0-9]{3,})(?:(?=\W)|$)'
             )
         self.providers['rt.debian.org'] = h.TicketRTProvider(

@@ -36,9 +36,10 @@ import time
 import urllib2
 
 class BaseProvider():
-    def __init__(self, fixup=None, prefix=None, default_re=None):
+    def __init__(self, fixup=None, prefix=None, default_re=None, postfix=None):
         self.fixup = fixup
         self.prefix = prefix
+        self.postfix = postfix
         if default_re is None and self.prefix is not None:
             self.re = r'(?i)(?<!\w)'+self.prefix+r'#([0-9]{2,})(?:(?=\W)|$)'
         else:
@@ -52,6 +53,8 @@ class BaseProvider():
             title = self.fixup(ticketnumber, title)
         if self.prefix is not None:
             title = self.prefix + title
+        if self.postfix is not None:
+            title = title + self.postfix%(ticketnumber)
 
         return title
 
@@ -63,7 +66,7 @@ class BaseProvider():
 class TicketHtmlTitleProvider(BaseProvider):
     """A ticket information provider that extracts the title
        tag from html pages at $url$ticketnumber."""
-    def __init__(self, url, fixup=None, prefix=None, default_re=None):
+    def __init__(self, url, fixup=None, prefix=None, default_re=None, postfix=None):
         """Constructs a ticket html title provider.
 
         :param url The base url where to find tickets.  The document at
@@ -71,7 +74,7 @@ class TicketHtmlTitleProvider(BaseProvider):
         :param fixup a function that takes a string (the title) and returns
                      another string we like better for printing.
         """
-        BaseProvider.__init__(self, fixup, prefix, default_re)
+        BaseProvider.__init__(self, fixup, prefix=prefix, default_re=default_re, postfix=postfix)
 
         self.url = url
 
@@ -91,8 +94,8 @@ class TicketHtmlTitleProvider(BaseProvider):
         return title
 
 class TorProposalProvider(BaseProvider):
-    def __init__(self, fixup=None, prefix=None, default_re=None):
-        BaseProvider.__init__(self, fixup, prefix, default_re)
+    def __init__(self, fixup=None, prefix=None, default_re=None, postfix=None):
+        BaseProvider.__init__(self, fixup,  prefix=prefix, default_re=default_re, postfix=postfix)
 
         self.url = 'https://gitweb.torproject.org/torspec.git/blob_plain/HEAD:/proposals/000-index.txt'
 
@@ -133,8 +136,8 @@ class TorProposalProvider(BaseProvider):
 class TicketRTProvider(BaseProvider):
     """A ticket information provider that returns the title
        of a request-tracker ticket."""
-    def __init__(self, rtconfigpath, fixup=None, prefix=None, default_re=None):
-        BaseProvider.__init__(self, fixup, prefix, default_re)
+    def __init__(self, rtconfigpath, fixup=None, prefix=None, default_re=None, postfix=None):
+        BaseProvider.__init__(self, fixup, prefix=prefix, default_re=default_re, postfix=postfix)
 
         self.rtrc = os.path.abspath( os.path.expanduser( rtconfigpath) )
 
