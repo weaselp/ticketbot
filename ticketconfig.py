@@ -42,51 +42,51 @@ class TicketConfig:
         self.providers['trac.torproject.org'] = h.TicketHtmlTitleProvider(
             'https://trac.torproject.org/projects/tor/ticket/',
             h.ReGroupFixup('.*?\((.*)\).*? Tor Bug Tracker & Wiki$'),
-            'tor',
-            r'(?<!\w)(?:[tT]or#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{4,})(?:(?=\W)|$)'
+            prefix='tor',
+            default_re=r'(?<!\w)(?:[tT]or#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{4,})(?:(?=\W)|$)'
             )
         self.providers['proposal.torproject.org'] = h.TorProposalProvider(
             fixup=lambda i,x: "Prop#%s: %s"%(i,x) )
         self.providers['github.com-tor-ooni-probe-pull'] = h.TicketHtmlTitleProvider(
             'https://github.com/TheTorProject/ooni-probe/pull/',
             h.ReGroupFixup('.*?(.*) . Pull Request #[0-9]+ . TheTorProject/ooni-probe . GitHub$'),
-            'github-OONI-PR'
+            prefix='github-OONI-PR'
             )
         self.providers['bugs.debian.org'] = h.TicketHtmlTitleProvider(
             'http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=',
             h.ReGroupFixup('#[0-9]+ - (.*) - Debian Bug report logs$'),
-            'Debian',
-            r'(?i)(?<!\w)Deb(?:ian)?#([0-9]{3,})(?:(?=\W)|$)'
+            prefix='Debian',
+            default_re=r'(?i)(?<!\w)Deb(?:ian)?#([0-9]{3,})(?:(?=\W)|$)'
             )
         self.providers['rt.debian.org'] = h.TicketRTProvider(
             '~/.rtrc-debian',
             h.ReGroupFixup('[0-9]+: *(.*)$'),
-            'DebianRT',
+            prefix='DebianRT',
             )
         self.providers['bts.grml.org'] = h.TicketHtmlTitleProvider(
             'http://bts.grml.org/grml/issue',
             h.ReGroupFixup('Issue [0-9]+: (.*) - GRML issue tracker$'),
-            'GRML'
+            prefix='GRML'
             )
         self.providers['munin-monitoring.org'] = h.TicketHtmlTitleProvider(
             'http://munin-monitoring.org/ticket/',
             h.ReGroupFixup('.*?\((.*)\).*? Munin$'),
-            'munin'
+            prefix='munin'
             )
         self.providers['launchpad.net/ubuntu'] = h.TicketHtmlTitleProvider(
             'https://bugs.launchpad.net/ubuntu/+bug/',
             h.ReGroupFixup('Bug #[0-9]+ .(.*). : Bugs :'),
-            'ubuntu'
+            prefix='ubuntu'
             )
         self.providers['bugzilla.redhat.com'] = h.TicketHtmlTitleProvider(
             'https://bugzilla.redhat.com/show_bug.cgi?id=',
             h.ReGroupFixup('Bug [0-9]+ . (.*)$'),
-            'redhat'
+            prefix='redhat'
             )
         self.providers['labs.riseup.net'] = h.TicketHtmlTitleProvider(
             'https://labs.riseup.net/code/issues/',
             h.ReGroupFixup('[^#]+#[0-9]+: (.*) - RiseupLabs Code Repository$'),
-            'Tails'
+            prefix='Tails'
             )
 
         self.channels = {}
