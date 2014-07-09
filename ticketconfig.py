@@ -95,6 +95,7 @@ class TicketConfig:
         for tor in ('#ooni', '#nottor', '#tor-dev', '#tor', '#tor-www', '#tor-project'):
             self._add(tor, '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)', self.providers['trac.torproject.org'])
             self._add(tor, '(?<!\w)[Pp]rop#([0-9]+)(?:(?=\W)|$)', self.providers['proposal.torproject.org'])
+            self._add(tor, None, self.providers['bugs.debian.org'])
 
         self._add('#ooni', '(?<!\w)(?:PR#|https://github.com/TheTorProject/ooni-probe/pull/)([0-9]+)(?:(?=\W)|$)', self.providers['github.com-tor-ooni-probe-pull'])
 
