@@ -54,7 +54,7 @@ class Ticket(callbacks.Plugin):
 
     def _processLine(self, channel, payload):
         for res in channel.doPrivmsg(payload):
-            yield '[%s]'%(res,)
+            yield res
 
     def doPrivmsg(self, irc, msg):
         if irc.isChannel(msg.args[0]):
