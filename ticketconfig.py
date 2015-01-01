@@ -37,7 +37,7 @@ class TicketConfig:
             self.channels[ch] = h.TicketChannel()
         self.channels[ch].addProvider(*args)
 
-    def __init__(self):
+    def _setup_providers(self):
         self.providers = {}
         self.providers['trac.torproject.org'] = h.TicketHtmlTitleProvider(
             'https://trac.torproject.org/projects/tor/ticket/',
@@ -92,6 +92,7 @@ class TicketConfig:
             default_re=r'(?<!\w)(?:[tT]ails#|https://labs.riseup.net/code/issues/)([0-9]{4,})(?:(?=\W)|$)'
             )
 
+    def _setup_channels(self):
         self.channels = {}
         for tor in ('#ooni', '#nottor', '#tor-dev', '#tor', '#tor-www', '#tor-project'):
             self._add(tor, '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)', self.providers['trac.torproject.org'])
@@ -119,5 +120,9 @@ class TicketConfig:
         # debian
         for ch in ('#debian-perl', '#grml', '#debian-qa', '#debian-devel', '#debian-release', '#debian-ruby', '#debian-hurd', '#debian-security', '#debian-buildd', '#debian-edu', '#debian-gnome', '#debian-mate', '#debian-lts', '#debian-reproducible'):
             self._add(ch,        '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)', self.providers['bugs.debian.org'])
+
+    def __init__(self):
+        self._setup_providers()
+        self._setup_channels()
 
 # vim:set shiftwidth=4 softtabstop=4 expandtab:
