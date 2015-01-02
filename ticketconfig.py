@@ -32,94 +32,83 @@ import tickethelpers as h
 reload(h)
 
 class TicketConfig:
-    def _add(self, ch, *args):
-        if not ch in self.channels:
-            self.channels[ch] = h.TicketChannel()
-        self.channels[ch].addProvider(*args)
-
     def _setup_providers(self):
-        self.providers = {}
-        self.providers['trac.torproject.org'] = h.TicketHtmlTitleProvider(
+        p = []
+        p.append( h.TicketHtmlTitleProvider( 'trac.torproject.org',
             'https://trac.torproject.org/projects/tor/ticket/',
             h.ReGroupFixup('.*?\((.*)\).*? Tor Bug Tracker & Wiki$'),
             prefix='tor',
             postfix=' - https://bugs.torproject.org/%s',
             default_re=r'(?<!\w)(?:[tT]or#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{4,})(?:(?=\W)|$)'
-            )
-        self.providers['proposal.torproject.org'] = h.TorProposalProvider(
-            fixup=lambda i,x: "Prop#%s: %s"%(i,x) )
-        self.providers['github.com-tor-ooni-probe-pull'] = h.TicketHtmlTitleProvider(
+            ))
+        p.append( h.TorProposalProvider( 'proposal.torproject.org',
+            fixup=lambda i,x: "Prop#%s: %s"%(i,x) ))
+        p.append( h.TicketHtmlTitleProvider( 'github.com-tor-ooni-probe-pull',
             'https://github.com/TheTorProject/ooni-probe/pull/',
             h.ReGroupFixup('.*?(.*) . Pull Request #[0-9]+ . TheTorProject/ooni-probe . GitHub$'),
             prefix='github-OONI-PR'
-            )
-        self.providers['bugs.debian.org'] = h.TicketHtmlTitleProvider(
+            ))
+        p.append( h.TicketHtmlTitleProvider( 'bugs.debian.org',
             'http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=',
             h.ReGroupFixup('#[0-9]+ - (.*) - Debian Bug report logs$'),
             prefix='Debian',
             postfix=' - https://bugs.debian.org/%s',
             default_re=r'(?i)(?<!\w)Deb(?:ian)?#([0-9]{3,})(?:(?=\W)|$)'
-            )
-        self.providers['rt.debian.org'] = h.TicketRTProvider(
+            ))
+        p.append( h.TicketRTProvider( 'rt.debian.org',
             '~/.rtrc-debian',
             h.ReGroupFixup('[0-9]+: *(.*)$'),
             prefix='DebianRT',
-            )
-        self.providers['bts.grml.org'] = h.TicketHtmlTitleProvider(
+            ))
+        p.append( h.TicketHtmlTitleProvider( 'bts.grml.org',
             'http://bts.grml.org/grml/issue',
             h.ReGroupFixup('Issue [0-9]+: (.*) - GRML issue tracker$'),
             prefix='GRML'
-            )
-        self.providers['munin-monitoring.org'] = h.TicketHtmlTitleProvider(
+            ))
+        p.append( h.TicketHtmlTitleProvider( 'munin-monitoring.org',
             'http://munin-monitoring.org/ticket/',
             h.ReGroupFixup('.*?\((.*)\).*? Munin$'),
             prefix='munin'
-            )
-        self.providers['launchpad.net/ubuntu'] = h.TicketHtmlTitleProvider(
+            ))
+        p.append( h.TicketHtmlTitleProvider( 'launchpad.net/ubuntu',
             'https://bugs.launchpad.net/ubuntu/+bug/',
             h.ReGroupFixup('Bug #[0-9]+ .(.*). : Bugs :'),
             prefix='ubuntu'
-            )
-        self.providers['bugzilla.redhat.com'] = h.TicketHtmlTitleProvider(
+            ))
+        p.append( h.TicketHtmlTitleProvider( 'bugzilla.redhat.com',
             'https://bugzilla.redhat.com/show_bug.cgi?id=',
             h.ReGroupFixup('Bug [0-9]+ . (.*)$'),
             prefix='redhat'
-            )
-        self.providers['labs.riseup.net'] = h.TicketHtmlTitleProvider(
+            ))
+        p.append( h.TicketHtmlTitleProvider( 'labs.riseup.net',
             'https://labs.riseup.net/code/issues/',
             h.ReGroupFixup('[^#]+#[0-9]+: (.*) - RiseupLabs Code Repository$'),
             prefix='Tails',
             default_re=r'(?<!\w)(?:[tT]ails#|https://labs.riseup.net/code/issues/)([0-9]{4,})(?:(?=\W)|$)'
-            )
+            ))
 
+        self.providers = {}
+        for i in p:
+            self.providers[i.name] = i
+
+    #addChannel(self, channel, regex=None, default=False):
     def _setup_channels(self):
-        self.channels = {}
-        for tor in ('#ooni', '#nottor', '#tor-dev', '#tor', '#tor-www', '#tor-project'):
-            self._add(tor, '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)', self.providers['trac.torproject.org'])
-            self._add(tor, '(?<!\w)[Pp]rop#([0-9]+)(?:(?=\W)|$)', self.providers['proposal.torproject.org'])
-            self._add(tor, None, self.providers['bugs.debian.org'])
+        for tor in ('#ooni', '#nottor', '#tor*'):
+            self.providers['trac.torproject.org'    ].addChannel(tor, default=True)
+            self.providers['proposal.torproject.org'].addChannel(tor, regex='(?<!\w)[Pp]rop#([0-9]+)(?:(?=\W)|$)')
 
-        self._add('#ooni', '(?<!\w)(?:PR#|https://github.com/TheTorProject/ooni-probe/pull/)([0-9]+)(?:(?=\W)|$)', self.providers['github.com-tor-ooni-probe-pull'])
+        self.providers['github.com-tor-ooni-probe-pull'].addChannel('#ooni', regex='(?<!\w)(?:PR#|https://github.com/TheTorProject/ooni-probe/pull/)([0-9]+)(?:(?=\W)|$)')
 
-        self._add('#munin', '(?<!\w)[dD]#([0-9]{4,})(?:(?=\W)|$)', self.providers['bugs.debian.org'])
-        self._add('#munin', '(?<!\w)[uU]#([0-9]{4,})(?:(?=\W)|$)', self.providers['launchpad.net/ubuntu'])
-        self._add('#munin', '(?<!\w)[rR]#([0-9]{4,})(?:(?=\W)|$)', self.providers['bugzilla.redhat.com'])
-        self._add('#munin', '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)', self.providers['munin-monitoring.org'])
+        self.providers['bugs.debian.org'     ].addChannel('#munin', regex='(?<!\w)[dD]#([0-9]{4,})(?:(?=\W)|$)')
+        self.providers['launchpad.net/ubuntu'].addChannel('#munin', regex='(?<!\w)[uU]#([0-9]{4,})(?:(?=\W)|$)')
+        self.providers['bugzilla.redhat.com' ].addChannel('#munin', regex='(?<!\w)[rR]#([0-9]{4,})(?:(?=\W)|$)')
+        self.providers['munin-monitoring.org'].addChannel('#munin', default=True)
 
-        for tails in ('#tails', '#tails-dev'):
-            self._add(tails, '(?<!\w)(?:#|https://labs.riseup.net/code/issues/)([0-9]{4,})(?:(?=\W)|$)', self.providers['labs.riseup.net'])
-            self._add(tails, None, self.providers['trac.torproject.org'])
-            self._add(tails, None, self.providers['bugs.debian.org'])
+        self.providers['labs.riseup.net'].addChannel('#tails*', default=True)
 
-        self._add('#tor-test', '(?<!\w)[dD]#([0-9]{4,})(?:(?=\W)|$)', self.providers['bugs.debian.org'])
-        self._add('#tor-test', '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)', self.providers['munin-monitoring.org'])
-        self._add('#tor-test', None, self.providers['trac.torproject.org'])
-
-        self._add('#grml', '(?<!\w)(?:[gG]|issue)([0-9]{4,})(?:(?=\W)|$)', self.providers['bts.grml.org'])
-
-        # debian
-        for ch in ('#debian-perl', '#grml', '#debian-qa', '#debian-devel', '#debian-release', '#debian-ruby', '#debian-hurd', '#debian-security', '#debian-buildd', '#debian-edu', '#debian-gnome', '#debian-mate', '#debian-lts', '#debian-reproducible'):
-            self._add(ch,        '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)', self.providers['bugs.debian.org'])
+        self.providers['bugs.debian.org'].addChannel('#tor-test', regex='(?<!\w)[dD]#([0-9]{4,})(?:(?=\W)|$)')
+        self.providers['bugs.debian.org'].addChannel('#debian-*', default=True);
+        self.providers['rt.debian.org'  ].addChannel('#debian-*', regex='(?<!\w)RT#([0-9]+)(?:(?=\W)|$)')
 
     def __init__(self):
         self._setup_providers()

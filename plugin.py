@@ -50,17 +50,12 @@ class Ticket(callbacks.Plugin):
         self._config = ticketconfig.TicketConfig()
 
         self.providers = self._config.providers
-        self.channels = self._config.channels
-
-    def _processLine(self, channel, payload):
-        for res in channel.doPrivmsg(payload):
-            yield res
 
     def doPrivmsg(self, irc, msg):
         if irc.isChannel(msg.args[0]):
             (tgt, payload) = msg.args
-            if tgt in self.channels:
-                for line in self._processLine(self.channels[tgt], payload):
+            for p in self.providers:
+                for line in self.providers[p].doPrivmsg(tgt, payload):
                     irc.queueMsg(ircmsgs.notice(tgt, line.encode('utf-8')))
                     irc.noReply()
 

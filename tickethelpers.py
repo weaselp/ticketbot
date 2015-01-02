@@ -34,9 +34,16 @@ import re
 import subprocess
 import time
 import urllib2
+import fnmatch
+import supybot.log as log
 
-class BaseProvider():
-    def __init__(self, fixup=None, prefix=None, default_re=None, postfix=None):
+class BaseProvider(object):
+    minRepeat = 1800
+    defaultRE = '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)'
+    debugChannels = ['#*-test']
+
+    def __init__(self, name, fixup=None, prefix=None, default_re=None, postfix=None):
+        self.name = name
         self.fixup = fixup
         self.prefix = prefix
         self.postfix = postfix
@@ -44,6 +51,8 @@ class BaseProvider():
             self.re = r'(?i)(?<!\w)'+self.prefix+r'#([0-9]{2,})(?:(?=\W)|$)'
         else:
             self.re = default_re
+        self.channels = {}
+        self.lastSent = {}
 
     def __getitem__(self, ticketnumber):
         title = self._gettitle(ticketnumber)
@@ -59,14 +68,60 @@ class BaseProvider():
         return title
 
     def matches(self, msg):
-        if self.prefix is None: return
+        if self.re is None: return []
 
         return re.findall(self.re, msg)
+
+    def addChannel(self, channel, regex=None, default=False):
+        """Adds a dedicated trigger regex for this provider for a channel"""
+        if channel in self.channels:
+            log.warning("[%s] re-adding %s"%(self.name, channel))
+        self.channels[channel] = { 're': regex, 'default': default }
+
+    def _do_log(self, tgt):
+        for d in self.debugChannels:
+            if fnmatch.fnmatch(tgt, d):
+                return True
+        return False
+
+    def doPrivmsg(self, tgt, msg):
+        if self._do_log(tgt): log.debug("[%s][%s] in doPrivmsg %s"%(self.name, tgt, msg))
+        matches = []
+        matches += self.matches(msg)
+
+        for key in self.channels:
+            if fnmatch.fnmatch(tgt, key):
+                ch = self.channels[key]
+
+                if ch['default']:
+                    if self._do_log(tgt): log.debug("[%s][%s] checking default regex for %s: %s %s"%(self.name, tgt, key, self.defaultRE, msg))
+                    matches += re.findall(self.defaultRE, msg)
+                if ch['re'] is not None:
+                    if self._do_log(tgt): log.debug("[%s][%s] checking extra regex for %s: %s %s"%(self.name, tgt, key, ch['re'], msg))
+                    matches += re.findall(ch['re'], msg)
+
+        if self._do_log(tgt): log.debug("[%s] matches: %s"%(self.name, matches))
+        for m in matches:
+            if (tgt,m) in self.lastSent and \
+                self.lastSent[(tgt,m)] >= time.time() - self.minRepeat:
+                log.debug("[%s][%s] rate limited match %s"%(self.name, tgt, m))
+                continue
+
+            try:
+                item = self[m]
+            except IndexError:
+                log.debug("[%s][%s] failed to lookup %s"%(self.name, tgt, m))
+                continue
+
+            if self._do_log(tgt): log.debug("[%s][%s] sending for %s: %s"%(self.name, tgt, m, item))
+            self.lastSent[(tgt,m)] = time.time()
+            yield item
+
 
 class TicketHtmlTitleProvider(BaseProvider):
     """A ticket information provider that extracts the title
        tag from html pages at $url$ticketnumber."""
-    def __init__(self, url, fixup=None, prefix=None, default_re=None, postfix=None):
+    def __init__(self, name, url, fixup=None, prefix=None, default_re=None, postfix=None):
         """Constructs a ticket html title provider.
 
         :param url The base url where to find tickets.  The document at
@@ -74,7 +129,7 @@ class TicketHtmlTitleProvider(BaseProvider):
         :param fixup a function that takes a string (the title) and returns
                      another string we like better for printing.
         """
-        BaseProvider.__init__(self, fixup, prefix=prefix, default_re=default_re, postfix=postfix)
+        BaseProvider.__init__(self, name, fixup, prefix=prefix, default_re=default_re, postfix=postfix)
 
         self.url = url
 
@@ -94,8 +149,8 @@ class TicketHtmlTitleProvider(BaseProvider):
         return title
 
 class TorProposalProvider(BaseProvider):
-    def __init__(self, fixup=None, prefix=None, default_re=None, postfix=None):
-        BaseProvider.__init__(self, fixup,  prefix=prefix, default_re=default_re, postfix=postfix)
+    def __init__(self, name, fixup=None, prefix=None, default_re=None, postfix=None):
+        BaseProvider.__init__(self, name, fixup,  prefix=prefix, default_re=default_re, postfix=postfix)
 
         self.url = 'https://gitweb.torproject.org/torspec.git/blob_plain/HEAD:/proposals/000-index.txt'
 
@@ -136,8 +191,8 @@ class TorProposalProvider(BaseProvider):
 class TicketRTProvider(BaseProvider):
     """A ticket information provider that returns the title
        of a request-tracker ticket."""
-    def __init__(self, rtconfigpath, fixup=None, prefix=None, default_re=None, postfix=None):
-        BaseProvider.__init__(self, fixup, prefix=prefix, default_re=default_re, postfix=postfix)
+    def __init__(self, name, rtconfigpath, fixup=None, prefix=None, default_re=None, postfix=None):
+        BaseProvider.__init__(self, name, fixup, prefix=prefix, default_re=default_re, postfix=postfix)
 
         self.rtrc = os.path.abspath( os.path.expanduser( rtconfigpath) )
 
@@ -153,35 +208,6 @@ class TicketRTProvider(BaseProvider):
         return title
 
 
-class TicketChannel():
-    """Dispatcher and rate limiter for per-channel ticketing info"""
-
-    def __init__(self, minRepeat=1800):
-        self.providers = []
-        self.minRepeat = minRepeat
-        self.lastSent = {}
-
-    def addProvider(self, regex, provider):
-        """Adds provider triggered by regex to this channel"""
-        self.providers.append( { 're': regex, 'provider': provider } )
-
-    def doPrivmsg(self, msg):
-        for p in self.providers:
-            matches = p['provider'].matches(msg)
-            if matches is None: matches = []
-            if p['re'] is not None: matches += re.findall(p['re'], msg)
-            for m in matches:
-                try:
-                    item = p['provider'][m]
-                except IndexError:
-                    continue
-
-                if m in self.lastSent and \
-                    self.lastSent[m] >= time.time() - self.minRepeat:
-                    continue
-
-                self.lastSent[m] = time.time()
-                yield item
 
 class ReGroupFixup:
     def __init__(self, groupre):
