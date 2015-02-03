@@ -152,7 +152,7 @@ class TorProposalProvider(BaseProvider):
     def __init__(self, name, fixup=None, prefix=None, default_re=None, postfix=None):
         BaseProvider.__init__(self, name, fixup,  prefix=prefix, default_re=default_re, postfix=postfix)
 
-        self.url = 'https://gitweb.torproject.org/torspec.git/blob_plain/HEAD:/proposals/000-index.txt'
+        self.url = 'https://gitweb.torproject.org/torspec.git/tree/proposals/000-index.txt'
 
         self.expire = 0
         self.data = None
