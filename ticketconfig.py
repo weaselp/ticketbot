@@ -84,6 +84,7 @@ class TicketConfig:
             'https://labs.riseup.net/code/issues/',
             h.ReGroupFixup('[^#]+#[0-9]+: (.*) - RiseupLabs Code Repository$'),
             prefix='Tails',
+            postfix=' - https://labs.riseup.net/code/issues/%s',
             default_re=r'(?<!\w)(?:[tT]ails#|https://labs.riseup.net/code/issues/)([0-9]{4,})(?:(?=\W)|$)'
             ))
 
