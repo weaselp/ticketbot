@@ -107,11 +107,10 @@ class TicketConfig:
 
         self.providers['labs.riseup.net'].addChannel('#tails*', default=True)
 
-        self.providers['bugs.debian.org'].addChannel('#tor-test', regex='(?<!\w)[dD]#([0-9]{4,})(?:(?=\W)|$)')
-        self.providers['bugs.debian.org'].addChannel('#debian-*', default=True)
-        self.providers['rt.debian.org'  ].addChannel('#debian-*', regex='(?<!\w)RT#([0-9]+)(?:(?=\W)|$)')
+        for ch in ('#debian-*', '#pbuilder', '#devscripts'):
+            self.providers['bugs.debian.org'].addChannel(ch, default=True)
+            self.providers['rt.debian.org'  ].addChannel(ch, regex='(?<!\w)RT#([0-9]+)(?:(?=\W)|$)')
 
-        self.providers['bugs.debian.org'].addChannel('#pbuilder', default=True)
         self.providers['launchpad.net/ubuntu'].addChannel('#pbuilder', regex='(?<!\w)[uU]#([0-9]{4,})(?:(?=\W)|$)')
 
     def __init__(self):
