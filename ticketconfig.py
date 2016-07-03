@@ -53,7 +53,7 @@ class TicketConfig:
             h.ReGroupFixup('#[0-9]+ - (.*) - Debian Bug report logs$'),
             prefix='Debian',
             postfix=' - https://bugs.debian.org/%s',
-            default_re=r'(?i)(?<!\w)(?:Deb(?:ian)?#|https?://bugs.debian.org/|https://bugs.debian.org/cgi-bin/bugreport.cgi\?bug=)([0-9]{3,})(?:(?=\W)|$)'
+            default_re=r'(?i)(?<!\w)(?:Deb(?:ian)?#|bug|https?://bugs.debian.org/|https://bugs.debian.org/cgi-bin/bugreport.cgi\?bug=)([0-9]{3,})(?:(?=\W)|$)'
             ))
         p.append( h.TicketRTProvider( 'rt.debian.org',
             '~/.rtrc-debian',
