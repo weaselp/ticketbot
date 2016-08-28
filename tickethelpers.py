@@ -56,6 +56,7 @@ class BaseProvider(object):
 
     def __getitem__(self, ticketnumber):
         title = self._gettitle(ticketnumber)
+        assert isinstance(title, str)
         title = re.sub('\s+', ' ', title).strip()
 
         if self.fixup is not None:
