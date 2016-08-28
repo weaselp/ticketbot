@@ -1,5 +1,5 @@
 ###
-# Copyright (c) 2013, 2014, 2015 Peter Palfrader <peter@palfrader.org>
+# Copyright (c) 2013, 2014, 2015, 2016 Peter Palfrader <peter@palfrader.org>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -34,12 +34,20 @@ import supybot.plugins as plugins
 import supybot.ircmsgs as ircmsgs
 import supybot.ircutils as ircutils
 import supybot.callbacks as callbacks
+import importlib
+try:
+    from supybot.i18n import PluginInternationalization
+    _ = PluginInternationalization('Ticket')
+except ImportError:
+    # Placeholder that allows to run the plugin on a bot
+    # without the i18n module
+    _ = lambda x: x
 
 try:
-    import ticketconfig_private as ticketconfig
+    from . import ticketconfig_private as ticketconfig
 except ImportError:
-    import ticketconfig
-reload(ticketconfig)
+    from . import ticketconfig
+importlib.reload(ticketconfig)
 
 
 class Ticket(callbacks.Plugin):
@@ -56,7 +64,8 @@ class Ticket(callbacks.Plugin):
             (tgt, payload) = msg.args
             for p in self.providers:
                 for line in self.providers[p].doPrivmsg(tgt, payload):
-                    irc.queueMsg(ircmsgs.notice(tgt, line.encode('utf-8')))
+                    assert isinstance(line, str)
+                    irc.queueMsg(ircmsgs.notice(tgt, line))
                     irc.noReply()
 
 

@@ -1,5 +1,5 @@
 ###
-# Copyright (c) 2013, 2014, 2015 Peter Palfrader <peter@palfrader.org>
+# Copyright (c) 2013, 2014, 2015, 2016 Peter Palfrader <peter@palfrader.org>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,12 +28,12 @@
 
 ###
 
-import BeautifulSoup
+from bs4 import BeautifulSoup
 import os
 import re
 import subprocess
 import time
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import fnmatch
 import supybot.log as log
 
@@ -56,6 +56,7 @@ class BaseProvider(object):
 
     def __getitem__(self, ticketnumber):
         title = self._gettitle(ticketnumber)
+        assert isinstance(title, str)
         title = re.sub('\s+', ' ', title).strip()
 
         if self.fixup is not None:
@@ -135,17 +136,17 @@ class TicketHtmlTitleProvider(BaseProvider):
 
     def _gettitle(self, ticketnumber):
         try:
-            response = urllib2.urlopen('%s%s'%(self.url, ticketnumber))
-        except urllib2.HTTPError as e:
+            response = urllib.request.urlopen('%s%s'%(self.url, ticketnumber))
+        except urllib.error.HTTPError as e:
             raise IndexError(e)
 
         data = response.read()
 
-        charset = response.headers.getparam('charset')
+        charset = response.info().get_content_charset()
         if charset: data = data.decode(charset)
 
-        b = BeautifulSoup.BeautifulSoup(data, convertEntities=BeautifulSoup.BeautifulSoup.HTML_ENTITIES)
-        title = b.find('title').contents[0]
+        soup = BeautifulSoup(data, 'html.parser')
+        title = soup.title.string
         return title
 
 class TorProposalProvider(BaseProvider):
@@ -162,13 +163,13 @@ class TorProposalProvider(BaseProvider):
         if self.expire > time.time(): return
 
         try:
-            response = urllib2.urlopen(self.url)
+            response = urllib.request.urlopen(self.url)
         except:
             return
 
         data = response.read()
 
-        charset = response.headers.getparam('charset')
+        charset = response.info().get_content_charset()
         if charset: data = data.decode(charset)
 
         self.data = data
@@ -199,9 +200,12 @@ class TicketRTProvider(BaseProvider):
     def _gettitle(self, ticketnumber):
         ticketnumber = int(ticketnumber)
         try:
-            title = subprocess.check_output(['rt', 'ls', '-i', str(ticketnumber), '-s'], env={ 'RTCONFIG': self.rtrc } )
+            rtclientouput = subprocess.check_output(['rt', 'ls', '-i', str(ticketnumber), '-s'], env={ 'RTCONFIG': self.rtrc } )
         except subprocess.CalledProcessError as e:
             raise IndexError(e)
+
+        title = rtclientouput.decode('utf-8')
+
         if title == "No matching results.\n":
             raise IndexError(title)
 

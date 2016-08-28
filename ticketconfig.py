@@ -28,8 +28,9 @@
 
 ###
 
-import tickethelpers as h
-reload(h)
+from . import tickethelpers as h
+import importlib
+importlib.reload(h)
 
 class TicketConfig:
     def _setup_providers(self):
