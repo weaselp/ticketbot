@@ -43,9 +43,9 @@ except ImportError:
     _ = lambda x: x
 
 try:
-    import ticketconfig_private as ticketconfig
+    from . import ticketconfig_private as ticketconfig
 except ImportError:
-    import ticketconfig
+    from . import ticketconfig
 reload(ticketconfig)
 
 

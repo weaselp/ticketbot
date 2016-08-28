@@ -33,7 +33,7 @@ import os
 import re
 import subprocess
 import time
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import fnmatch
 import supybot.log as log
 
@@ -135,8 +135,8 @@ class TicketHtmlTitleProvider(BaseProvider):
 
     def _gettitle(self, ticketnumber):
         try:
-            response = urllib2.urlopen('%s%s'%(self.url, ticketnumber))
-        except urllib2.HTTPError as e:
+            response = urllib.request.urlopen('%s%s'%(self.url, ticketnumber))
+        except urllib.error.HTTPError as e:
             raise IndexError(e)
 
         data = response.read()
@@ -162,7 +162,7 @@ class TorProposalProvider(BaseProvider):
         if self.expire > time.time(): return
 
         try:
-            response = urllib2.urlopen(self.url)
+            response = urllib.request.urlopen(self.url)
         except:
             return
 
