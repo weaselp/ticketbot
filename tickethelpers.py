@@ -28,7 +28,7 @@
 
 ###
 
-import BeautifulSoup
+from bs4 import BeautifulSoup
 import os
 import re
 import subprocess
@@ -144,8 +144,8 @@ class TicketHtmlTitleProvider(BaseProvider):
         charset = response.headers.getparam('charset')
         if charset: data = data.decode(charset)
 
-        b = BeautifulSoup.BeautifulSoup(data, convertEntities=BeautifulSoup.BeautifulSoup.HTML_ENTITIES)
-        title = b.find('title').contents[0]
+        soup = BeautifulSoup(data, 'html.parser')
+        title = soup.title.string
         return title
 
 class TorProposalProvider(BaseProvider):
