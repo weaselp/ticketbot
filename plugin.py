@@ -34,6 +34,7 @@ import supybot.plugins as plugins
 import supybot.ircmsgs as ircmsgs
 import supybot.ircutils as ircutils
 import supybot.callbacks as callbacks
+from importlib import reload
 try:
     from supybot.i18n import PluginInternationalization
     _ = PluginInternationalization('Ticket')

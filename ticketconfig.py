@@ -29,6 +29,7 @@
 ###
 
 from . import tickethelpers as h
+from importlib import reload
 reload(h)
 
 class TicketConfig:
