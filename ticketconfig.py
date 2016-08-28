@@ -29,8 +29,8 @@
 ###
 
 from . import tickethelpers as h
-from importlib import reload
-reload(h)
+import importlib
+importlib.reload(h)
 
 class TicketConfig:
     def _setup_providers(self):

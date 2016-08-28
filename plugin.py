@@ -34,7 +34,7 @@ import supybot.plugins as plugins
 import supybot.ircmsgs as ircmsgs
 import supybot.ircutils as ircutils
 import supybot.callbacks as callbacks
-from importlib import reload
+import importlib
 try:
     from supybot.i18n import PluginInternationalization
     _ = PluginInternationalization('Ticket')
@@ -47,7 +47,7 @@ try:
     from . import ticketconfig_private as ticketconfig
 except ImportError:
     from . import ticketconfig
-reload(ticketconfig)
+importlib.reload(ticketconfig)
 
 
 class Ticket(callbacks.Plugin):
