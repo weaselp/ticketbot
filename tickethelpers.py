@@ -200,9 +200,12 @@ class TicketRTProvider(BaseProvider):
     def _gettitle(self, ticketnumber):
         ticketnumber = int(ticketnumber)
         try:
-            title = subprocess.check_output(['rt', 'ls', '-i', str(ticketnumber), '-s'], env={ 'RTCONFIG': self.rtrc } )
+            rtclientouput = subprocess.check_output(['rt', 'ls', '-i', str(ticketnumber), '-s'], env={ 'RTCONFIG': self.rtrc } )
         except subprocess.CalledProcessError as e:
             raise IndexError(e)
+
+        title = rtclientouput.decode('utf-8')
+
         if title == "No matching results.\n":
             raise IndexError(title)
 
