@@ -34,6 +34,13 @@ import supybot.plugins as plugins
 import supybot.ircmsgs as ircmsgs
 import supybot.ircutils as ircutils
 import supybot.callbacks as callbacks
+try:
+    from supybot.i18n import PluginInternationalization
+    _ = PluginInternationalization('Ticket')
+except ImportError:
+    # Placeholder that allows to run the plugin on a bot
+    # without the i18n module
+    _ = lambda x: x
 
 try:
     import ticketconfig_private as ticketconfig
