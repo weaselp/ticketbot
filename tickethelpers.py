@@ -141,7 +141,7 @@ class TicketHtmlTitleProvider(BaseProvider):
 
         data = response.read()
 
-        charset = response.headers.getparam('charset')
+        charset = response.info().get_content_charset()
         if charset: data = data.decode(charset)
 
         soup = BeautifulSoup(data, 'html.parser')
@@ -168,7 +168,7 @@ class TorProposalProvider(BaseProvider):
 
         data = response.read()
 
-        charset = response.headers.getparam('charset')
+        charset = response.info().get_content_charset()
         if charset: data = data.decode(charset)
 
         self.data = data

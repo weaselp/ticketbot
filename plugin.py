@@ -64,7 +64,8 @@ class Ticket(callbacks.Plugin):
             (tgt, payload) = msg.args
             for p in self.providers:
                 for line in self.providers[p].doPrivmsg(tgt, payload):
-                    irc.queueMsg(ircmsgs.notice(tgt, line.encode('utf-8')))
+                    assert isinstance(line, str)
+                    irc.queueMsg(ircmsgs.notice(tgt, line))
                     irc.noReply()
 
 
