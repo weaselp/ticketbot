@@ -108,7 +108,7 @@ class TicketConfig:
 
         self.providers['labs.riseup.net'].addChannel('#tails*', default=True)
 
-        for ch in ('#debian-*', '#pbuilder', '#devscripts'):
+        for ch in ('#debian-*', '#pbuilder', '#devscripts', '#reproducible-builds'):
             self.providers['bugs.debian.org'].addChannel(ch, default=True)
             self.providers['rt.debian.org'  ].addChannel(ch, regex='(?<!\w)RT#([0-9]+)(?:(?=\W)|$)')
 
