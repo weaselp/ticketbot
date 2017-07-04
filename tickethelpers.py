@@ -54,15 +54,30 @@ class BaseProvider(object):
         self.channels = {}
         self.lastSent = {}
 
-    def __getitem__(self, ticketnumber):
-        title = self._gettitle(ticketnumber)
-        assert isinstance(title, str)
+    def fixup_title(self, title, ticketnumber):
         title = re.sub('\s+', ' ', title).strip()
 
         if self.fixup is not None:
             title = self.fixup(ticketnumber, title)
+
+        return title
+
+    def __getitem__(self, ticketnumber):
+        title = self._gettitle(ticketnumber)
+        # gettitle may return just a string - the title,
+        # or a tuple of (str, bool) where the latter says
+        # if we already ran the fixup.
+        if isinstance(title, tuple):
+            (title, fixed_up) = title
+        else:
+            (title, fixed_up) = (title, False)
+
+        assert isinstance(title, str)
+
         if self.prefix is not None:
             title = self.prefix + title
+        if not fixed_up:
+            title = self.fixup(title, ticketnumber)
         if self.postfix is not None:
             title = title + self.postfix%(ticketnumber)
 
