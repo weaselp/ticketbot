@@ -40,7 +40,8 @@ class TicketConfig:
             h.ReGroupFixup('.*?\((.*)\).*? Tor Bug Tracker & Wiki$'),
             prefix='tor',
             postfix=' - https://bugs.torproject.org/%s',
-            default_re=r'(?<!\w)(?:[tT]or#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{4,})(?:(?=\W)|$)'
+            default_re=r'(?<!\w)(?:[tT]or#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{4,})(?:(?=\W)|$)',
+            status_finder = h.TracStatusExtractor
             ))
         p.append( h.TorProposalProvider( 'proposal.torproject.org',
             fixup=lambda i,x: "Prop#%s: %s"%(i,x) ))
@@ -64,12 +65,14 @@ class TicketConfig:
         p.append( h.TicketHtmlTitleProvider( 'bts.grml.org',
             'http://bts.grml.org/grml/issue',
             h.ReGroupFixup('Issue [0-9]+: (.*) - GRML issue tracker$'),
-            prefix='GRML'
+            prefix='GRML',
+            status_finder = h.TracStatusExtractor
             ))
         p.append( h.TicketHtmlTitleProvider( 'munin-monitoring.org',
             'http://munin-monitoring.org/ticket/',
             h.ReGroupFixup('.*?\((.*)\).*? Munin$'),
-            prefix='munin'
+            prefix='munin',
+            status_finder = h.TracStatusExtractor
             ))
         p.append( h.TicketHtmlTitleProvider( 'launchpad.net/ubuntu',
             'https://bugs.launchpad.net/ubuntu/+bug/',
