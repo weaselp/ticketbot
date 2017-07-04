@@ -133,21 +133,29 @@ class BaseProvider(object):
             self.lastSent[(tgt,m)] = time.time()
             yield item
 
+def TracStatusExtractor(soup):
+    span = soup.find_all('span', {'class' : 'trac-status'})
+    if span:
+        return span[0].a.get_text()
+    else:
+        return None
 
 class TicketHtmlTitleProvider(BaseProvider):
     """A ticket information provider that extracts the title
        tag from html pages at $url$ticketnumber."""
-    def __init__(self, name, url, fixup=None, prefix=None, default_re=None, postfix=None):
+    def __init__(self, name, url, fixup=None, prefix=None, default_re=None, postfix=None, status_finder=None):
         """Constructs a ticket html title provider.
 
         :param url The base url where to find tickets.  The document at
                    ${url}${ticketnumber} should have the appropriate title.
         :param fixup a function that takes a string (the title) and returns
                      another string we like better for printing.
+        :param status_finder function to provide a ticket's status to add to the title, given the html soup
         """
         BaseProvider.__init__(self, name, fixup, prefix=prefix, default_re=default_re, postfix=postfix)
 
         self.url = url
+        self.status_finder = status_finder
 
     def _gettitle(self, ticketnumber):
         try:
@@ -162,7 +170,12 @@ class TicketHtmlTitleProvider(BaseProvider):
 
         soup = BeautifulSoup(data, 'html.parser')
         title = soup.title.string
-        return title
+        title = self.fixup_title(title, ticketnumber)
+        if self.status_finder is not None:
+            status = self.status_finder(soup)
+            if status is not None:
+                title = "%s (%s)" % (title, status)
+        return (title, True)
 
 class TorProposalProvider(BaseProvider):
     def __init__(self, name, fixup=None, prefix=None, default_re=None, postfix=None):
