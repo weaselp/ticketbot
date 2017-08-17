@@ -232,7 +232,7 @@ class TicketRTProvider(BaseProvider):
         except subprocess.CalledProcessError as e:
             raise IndexError(e)
 
-        title = rtclientouput.decode('utf-8')
+        title = rtclientouput.decode('utf-8').split('\n')[0]
 
         if title == "No matching results.\n":
             raise IndexError(title)
