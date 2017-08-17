@@ -174,7 +174,7 @@ class TicketHtmlTitleProvider(BaseProvider):
         if self.status_finder is not None:
             status = self.status_finder(soup)
             if status is not None:
-                title = "%s (%s)" % (title, status)
+                title = "%s - [%s]" % (title, status)
         return (title, True)
 
 class TorProposalProvider(BaseProvider):
