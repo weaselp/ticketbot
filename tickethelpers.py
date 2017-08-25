@@ -237,7 +237,8 @@ class TicketRTProvider(BaseProvider):
         if title == "No matching results.":
             raise IndexError(title)
 
-        return title
+        title = self.fixup_title(title, ticketnumber)
+        return (title, True)
 
 
 
