@@ -61,6 +61,7 @@ class TicketConfig:
             '~/.rtrc-debian',
             h.ReGroupFixup('[0-9]+: *(.*)$'),
             prefix='DebianRT',
+            postfix=' - https://rt.debian.org/Ticket/Display.html?id=%s'
             ))
         p.append( h.TicketHtmlTitleProvider( 'bts.grml.org',
             'http://bts.grml.org/grml/issue',
