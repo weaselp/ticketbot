@@ -234,7 +234,7 @@ class TicketRTProvider(BaseProvider):
 
         title = rtclientouput.decode('utf-8').split('\n')[0]
 
-        if title == "No matching results.\n":
+        if title == "No matching results.":
             raise IndexError(title)
 
         return title
