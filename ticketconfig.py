@@ -44,7 +44,7 @@ class TicketConfig:
             status_finder = h.TracStatusExtractor
             ))
         p.append( h.TorProposalProvider( 'proposal.torproject.org',
-            fixup=lambda i,x: "Prop#%s: %s"%(i,x) ))
+            fixup=lambda i,x: "Prop#%s: %s" % (x, i) ))
         p.append( h.TicketHtmlTitleProvider( 'github.com-tor-ooni-probe-pull',
             'https://github.com/TheTorProject/ooni-probe/pull/',
             h.ReGroupFixup('.*?(.*) . Pull Request #[0-9]+ . TheTorProject/ooni-probe . GitHub$'),
