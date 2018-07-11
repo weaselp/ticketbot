@@ -92,6 +92,13 @@ class TicketConfig:
             postfix=' - https://labs.riseup.net/code/issues/%s',
             default_re=r'(?<!\w)(?:[tT]ails#|https://labs.riseup.net/code/issues/)([0-9]{4,})(?:(?=\W)|$)'
             ))
+        p.append( h.TicketHtmlTitleProvider( 'xkcd.com',
+            'https://m.xkcd.com/',
+            h.ReGroupFixup('xkcd: (.*)'),
+            prefix='xkcd',
+            postfix=' - https://m.xkcd.com/%s/',
+            default_re=r'(?<!\w)(?i)xkcd#([0-9]{2,})(?:(?=\W)|$)',
+            ))
 
         self.providers = {}
         for i in p:
