@@ -70,10 +70,9 @@ class TicketConfig:
             status_finder = h.TracStatusExtractor
             ))
         p.append( h.TicketHtmlTitleProvider( 'munin-monitoring.org',
-            'http://munin-monitoring.org/ticket/',
-            h.ReGroupFixup('.*?\((.*)\).*? Munin$'),
+            'https://github.com/munin-monitoring/munin/issues/',
+            h.ReGroupFixup('.*?(.*) . (?:Issue|Pull Request) #[0-9]+ . munin-monitoring/munin$'),
             prefix='munin',
-            status_finder = h.TracStatusExtractor
             ))
         p.append( h.TicketHtmlTitleProvider( 'launchpad.net/ubuntu',
             'https://bugs.launchpad.net/ubuntu/+bug/',
