@@ -71,7 +71,7 @@ class TicketConfig:
             ))
         p.append( h.TicketHtmlTitleProvider( 'munin-monitoring.org',
             'https://github.com/munin-monitoring/munin/issues/',
-            h.ReGroupFixup('.*?(.*) . (?:Issue|Pull Request) #[0-9]+ . munin-monitoring/munin$'),
+            h.ReGroupFixup('.*?(.*) . (?:Issue|Pull Request) #[0-9]+ . munin-monitoring/munin . GitHub$'),
             prefix='munin',
             ))
         p.append( h.TicketHtmlTitleProvider( 'launchpad.net/ubuntu',
