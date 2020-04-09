@@ -117,6 +117,9 @@ class BaseProvider(object):
                     matches += re.findall(ch['re'], msg)
 
         if self._do_log(tgt): log.debug("[%s] matches: %s"%(self.name, matches))
+        if len(matches) >= 4:
+            log.debug("[%s] skipping because too many matches (%d)"%(len(matches),))
+            return
         for m in matches:
             if (tgt,m) in self.lastSent and \
                 self.lastSent[(tgt,m)] >= time.time() - self.minRepeat:
