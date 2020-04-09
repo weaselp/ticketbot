@@ -53,7 +53,7 @@ class TicketConfig:
         p.append( h.GitlabTitleProvider( 'gitlab.torproject.org',
             'https://gitlab.torproject.org/',
             fixup=None,
-            prefix='gitlab',
+            prefix='gitlabtpo',
             postfix=None,
             default_re=r'(?<!\w)((?<path>[\w/]+)#(?<number>[0-9]{4,}))(?:(?=\W)|$',
             status_finder = None,
