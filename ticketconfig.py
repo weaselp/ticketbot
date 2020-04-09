@@ -55,7 +55,7 @@ class TicketConfig:
             fixup=None,
             prefix='gitlabtpo',
             postfix=None,
-            default_re=r'(?<!\w)((?<path>[\w/]+)#(?<number>[0-9]{4,}))(?:(?=\W)|$',
+            default_re=r'(?<!\w)(?:gitlabtpo:)((?<path>[\w/]+)#(?<number>[0-9]{4,}))(?:(?=\W)|$',
             status_finder = None,
             ))
         p.append( h.TicketHtmlTitleProvider( 'bugs.debian.org',
