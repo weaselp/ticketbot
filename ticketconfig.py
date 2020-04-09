@@ -114,6 +114,7 @@ class TicketConfig:
     def _setup_channels(self):
         for tor in ('#ooni', '#nottor', '#tor*'):
             self.providers['trac.torproject.org'    ].addChannel(tor, default=True)
+            self.providers['gitlab.torproject.org'  ].addChannel(tor, regex=r'(?<!\w)(?P<path>[\w/]+)#(?P<number>[0-9]+)(?:(?=\W)|$)')
             self.providers['proposal.torproject.org'].addChannel(tor, regex='(?<!\w)[Pp]rop#([0-9]+)(?:(?=\W)|$)')
 
         self.providers['github.com-tor-ooni-probe-pull'].addChannel('#ooni', regex='(?<!\w)(?:PR#|https://github.com/TheTorProject/ooni-probe/pull/)([0-9]+)(?:(?=\W)|$)')
