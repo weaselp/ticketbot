@@ -52,11 +52,10 @@ class TicketConfig:
             ))
         p.append( h.GitlabTitleProvider( 'gitlab.torproject.org',
             'https://gitlab.torproject.org/',
-            fixup=None,
-            prefix='gitlabtpo',
-            postfix=None,
+            prefix='gitlabtpo:',
             default_re=r'(?<!\w)(?:gitlabtpo:)(?P<path>[\w/]+)#(?P<number>[0-9]+)(?:(?=\W)|$)',
             status_finder = None,
+            postfix=lambda title, ticketnumber, url='': '%s - %s%s'%(title, url, ticketnumber)
             ))
         p.append( h.TicketHtmlTitleProvider( 'bugs.debian.org',
             'http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=',

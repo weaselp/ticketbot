@@ -77,9 +77,12 @@ class BaseProvider(object):
         if self.prefix is not None:
             title = self.prefix + title
         if not fixed_up:
-            title = self.fixup(title, ticketnumber)
+            title = self.fixup(title, ticketnumber, *args, **kwargs)
         if self.postfix is not None:
-            title = title + self.postfix%(ticketnumber)
+            if callable(self.postfix):
+                title = self.postfix(title, ticketnumber, *args, **kwargs)
+            else:
+                title = title + self.postfix%(ticketnumber)
 
         return title
 
@@ -187,10 +190,7 @@ class GitlabTitleProvider(TicketHtmlTitleProvider):
     def __getitem__(self, ticketnumber):
         path, ticketnumber = ticketnumber
         url = '%s%s/-/issues/' % (self.url, path)
-        title = super().__getitem__(ticketnumber, url=url)
-        # override postfix because it does not support multiple components
-        return title + ' - ' + url
-
+        return super().__getitem__(ticketnumber, url=url)
 
 class TorProposalProvider(BaseProvider):
     def __init__(self, name, fixup=None, prefix=None, default_re=None, postfix=None):
