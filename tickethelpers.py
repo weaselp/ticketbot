@@ -62,8 +62,8 @@ class BaseProvider(object):
 
         return title
 
-    def __getitem__(self, ticketnumber):
-        title = self._gettitle(ticketnumber)
+    def __getitem__(self, ticketnumber, *args, **kwargs):
+        title = self._gettitle(ticketnumber, *args, **kwargs)
         # gettitle may return just a string - the title,
         # or a tuple of (str, bool) where the latter says
         # if we already ran the fixup.
@@ -182,8 +182,8 @@ class GitlabTitleProvider(TicketHtmlTitleProvider):
     """A ticket information provider that extracts the title
        tag from GitLab issues at $url/$path/-/issues/$ticketnumber."""
     def __getitem__(self, ticketnumber):
-        path, ticketnumber = ticketnumber.split('#')
-        url = '%s/%s/-/issues/%' % (self.url, path, ticketnumber)
+        path, ticketnumber = ticketnumber
+        url = '%s%s/-/issues/' % (self.url, path)
         title = super().__getitem__(ticketnumber, url=url)
         # override postfix because it does not support multiple components
         return title + ' - ' + url
