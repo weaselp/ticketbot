@@ -62,8 +62,8 @@ class BaseProvider(object):
 
         return title
 
-    def __getitem__(self, ticketnumber):
-        title = self._gettitle(ticketnumber)
+    def __getitem__(self, ticketnumber, *args, **kwargs):
+        title = self._gettitle(ticketnumber, *args, **kwargs)
         # gettitle may return just a string - the title,
         # or a tuple of (str, bool) where the latter says
         # if we already ran the fixup.
@@ -160,9 +160,9 @@ class TicketHtmlTitleProvider(BaseProvider):
         self.url = url
         self.status_finder = status_finder
 
-    def _gettitle(self, ticketnumber):
+    def _gettitle(self, ticketnumber, url=None):
         try:
-            response = urllib.request.urlopen('%s%s'%(self.url, ticketnumber))
+            response = urllib.request.urlopen('%s%s'%(url or self.url, ticketnumber))
         except urllib.error.HTTPError as e:
             raise IndexError(e)
 
@@ -179,6 +179,18 @@ class TicketHtmlTitleProvider(BaseProvider):
             if status is not None:
                 title = "%s - [%s]" % (title, status)
         return (title, True)
+
+
+class GitlabTitleProvider(TicketHtmlTitleProvider):
+    """A ticket information provider that extracts the title
+       tag from GitLab issues at $url/$path/-/issues/$ticketnumber."""
+    def __getitem__(self, ticketnumber):
+        path, ticketnumber = ticketnumber
+        url = '%s%s/-/issues/' % (self.url, path)
+        title = super().__getitem__(ticketnumber, url=url)
+        # override postfix because it does not support multiple components
+        return title + ' - ' + url
+
 
 class TorProposalProvider(BaseProvider):
     def __init__(self, name, fixup=None, prefix=None, default_re=None, postfix=None):
