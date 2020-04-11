@@ -88,17 +88,13 @@ class BaseProvider(object):
 
         title = re.sub('\s+', ' ', title).strip()
 
-        log.debug("[%s] have title %s"%(self.name, title))
         if self.fixup is not None:
             title = self.fixup(ticketnumber, title, *args, **kwargs)
-        log.debug("[%s] have title after fixup %s"%(self.name, title))
 
         if self.prefix is not None:
             title = self.prefix + title
-        log.debug("[%s] have title after prefix %s"%(self.name, title))
         if self.postfix is not None:
             title = title + self.postfix%(ticketnumber)
-        log.debug("[%s] have title after postfix %s"%(self.name, title))
 
         return title
 
@@ -248,8 +244,27 @@ class GitlabTitleProvider(TicketHtmlTitleProvider):
     """A ticket information provider that extracts the title
        tag from GitLab issues at $url/$path/-/issues/$ticketnumber."""
 
+    def __init__(self, name, url, *args, **kwargs):
+        """Constructs a gitlab title provider.
+
+           If fixup is not provided, we use a gitlab specific one.
+        """
+        if 'fixup' not in kwargs:
+            kwargs['fixup'] = GitlabTitleProvider.gitlab_fixup
+
+        TicketHtmlTitleProvider.__init__(self, name, url, *args, **kwargs)
+
+    @staticmethod
+    def gitlab_fixup(ticketnumber, title, extra):
+        """Constructs the string given all the info from _gettitle
+        """
+        m = re.match('(.*?)\s*(?:\(#[0-9]+\)) \S{1,2} Issues \S{1,2} .+(?: / .+) \S{1,2} GitLab$', title)
+        if m and len(m.groups()) > 0: title = m.group(1)
+
+        res = '%s#%s: %s - %s%s'%(extra['path'], extra['ticketnumber'], title, extra['url'], extra['ticketnumber'])
+        return res
+
     def _gettitle(self, ticketnumber):
-        log.debug("[%s] have ticketnumber %s"%(self.name, ticketnumber))
         path, ticketnumber = ticketnumber
         url = '%s%s/-/issues/' % (self.url, path)
         res = super()._gettitle(ticketnumber, url=url)

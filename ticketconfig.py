@@ -52,7 +52,6 @@ class TicketConfig:
             ))
         p.append( h.GitlabTitleProvider( 'gitlab.torproject.org',
             'https://gitlab.torproject.org/',
-            fixup=lambda ticketnumber, title, extra=None: '%s#%s: %s - %s%s'%(extra['path'], extra['ticketnumber'], title, extra['url'], extra['ticketnumber']),
             prefix='gitlabtpo:',
             default_re=r'(?<!\w)(?:gitlabtpo:)(?P<path>\w+/[\w/]*\w)#(?P<number>[0-9]+)(?:(?=\W)|$)',
             ))
