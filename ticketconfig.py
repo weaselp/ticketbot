@@ -53,8 +53,7 @@ class TicketConfig:
         p.append( h.GitlabTitleProvider( 'gitlab.torproject.org',
             'https://gitlab.torproject.org/',
             prefix='gitlabtpo:',
-            default_re=r'(?<!\w)(?:gitlabtpo:)(?P<path>[\w/]+)#(?P<number>[0-9]+)(?:(?=\W)|$)',
-            status_finder = None,
+            default_re=r'(?<!\w)(?:gitlabtpo:)(?P<path>\w+/[\w/]*\w)#(?P<number>[0-9]+)(?:(?=\W)|$)',
             postfix=lambda title, ticketnumber, url='': '%s - %s%s'%(title, url, ticketnumber)
             ))
         p.append( h.TicketHtmlTitleProvider( 'bugs.debian.org',
@@ -114,7 +113,7 @@ class TicketConfig:
     def _setup_channels(self):
         for tor in ('#ooni', '#nottor', '#tor*'):
             self.providers['trac.torproject.org'    ].addChannel(tor, default=True)
-            self.providers['gitlab.torproject.org'  ].addChannel(tor, regex=r'(?<!\w)(?P<path>[\w/]+)#(?P<number>[0-9]+)(?:(?=\W)|$)')
+            self.providers['gitlab.torproject.org'  ].addChannel(tor, regex=r'(?<!\w)(?P<path>\w+/[\w/]*\w)#(?P<number>[0-9]+)(?:(?=\W)|$)')
             self.providers['proposal.torproject.org'].addChannel(tor, regex='(?<!\w)[Pp]rop#([0-9]+)(?:(?=\W)|$)')
 
         self.providers['github.com-tor-ooni-probe-pull'].addChannel('#ooni', regex='(?<!\w)(?:PR#|https://github.com/TheTorProject/ooni-probe/pull/)([0-9]+)(?:(?=\W)|$)')
