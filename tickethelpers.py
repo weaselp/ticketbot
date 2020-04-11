@@ -49,21 +49,24 @@ class BaseProvider(object):
         Child classes are then expected to implement _gettitle().
 
         :param name A name for this provider that identifies it for logging purposes.
+        :param fixup A function that takes a ticketnumber, string (the title), and maybe an extra keyworad
+                     and returns another string we like better for printing.
+                     This is a more powerful solution than just setting
+                     prefix/postfix.  If prefix/postfix are given, and a fixup,
+                     prefix/postfix is done after.
         :param prefix A string to add to the front of the text we print.
                       If no default_re is provided, we built one from
                       prefix#<bugnumber>.
-        :param postfix A string to append to the text we print.
-        :param fixup A function that takes a string (the title) and returns
-                     another string we like better for printing.  This is a
-                     more powerful solution than just setting prefix/postfix.
-                     If prefix/postfix are given, and a fixup, prefix/postfix
-                     is done first.
+        :param postfix A format string to append to the text we print.  The one
+                       %s in the string is passed the ticketnumber.
         :param status_finder A function (taking ticketnumber, *args, **kwargs)
                             which provides a ticket's status to add to the
                             title.  One of the kwargs is "extra" and holds
-                            the tuple returned from _gettitle() if any.
+                            the dict returned from _gettitle() if it was a dict.
         :param default_re A regex to match.  Should have one matched group that is
-                          the ticketnumber.
+                          the ticketnumber.  If it has more than one group,
+                          then ticketnumbers are tuples, and the gettitle() and
+                          fixup need to handle this in the derived class.
         """
         self.name = name
         self.fixup = fixup
@@ -85,47 +88,48 @@ class BaseProvider(object):
 
         title = re.sub('\s+', ' ', title).strip()
 
-        if self.prefix is not None:
-            title = self.prefix + title
-        if self.postfix is not None:
-            if callable(self.postfix):
-                title = self.postfix(title, ticketnumber, *args, **kwargs)
-            else:
-                title = title + self.postfix%(ticketnumber)
-
+        log.debug("[%s] have title %s"%(self.name, title))
         if self.fixup is not None:
             title = self.fixup(ticketnumber, title, *args, **kwargs)
+        log.debug("[%s] have title after fixup %s"%(self.name, title))
+
+        if self.prefix is not None:
+            title = self.prefix + title
+        log.debug("[%s] have title after prefix %s"%(self.name, title))
+        if self.postfix is not None:
+            title = title + self.postfix%(ticketnumber)
+        log.debug("[%s] have title after postfix %s"%(self.name, title))
 
         return title
 
     def _gettitle(self, ticketnumber, *args, **kwargs):
-        """Return a string for ticketnumber, or a tuple whose first
-           element is a string.  The tuple is then handed to status_finder
-           to provide extra info.
+        """Return a string for ticketnumber, or a dict with at least
+           a 'title' element that is a string.
+           The dict is then handed to status_finder to provide extra info.
 
         Should be overridden by descendants.
         """
         assert(False)
 
-    def __getitem__(self, ticketnumber, *args, **kwargs):
+    def __getitem__(self, ticketnumber):
         """Get information about ticket ticketnumber.  Ticketnumber
            usually is a string, but it does not have to.
 
-           If it is not a string, then the entire tuple is passed on to
-           gettitle and fixup as an 'extra' keyword, along with any already
-           provided args/kwargs.
+           If it is not a string, then the dict is passed on to
+           gettitle and fixup as an 'extra' keyword.
            """
-        title = self._gettitle(ticketnumber, *args, **kwargs)
+        title = self._gettitle(ticketnumber)
 
-        if isinstance(title, tuple):
+        kwargs = {}
+        if isinstance(title, dict):
             kwargs['extra'] = title
-            title = title[0]
+            title = title['title']
         assert isinstance(title, str)
 
-        title = self.fixup_title(title, ticketnumber, *args, **kwargs)
+        title = self.fixup_title(title, ticketnumber, **kwargs)
 
         if self.status_finder is not None:
-            status = self.status_finder(ticketnumber, *args, **kwargs)
+            status = self.status_finder(ticketnumber, **kwargs)
             if status is not None:
                 title = "%s - [%s]" % (title, status)
 
@@ -197,8 +201,10 @@ class BaseProvider(object):
             self.lastSent[(tgt,m)] = time.time()
             yield item
 
-def TracStatusExtractor(soup):
-    span = soup.find_all('span', {'class' : 'trac-status'})
+def TracStatusExtractor(ticketnumber, extra):
+    """Extracts the status of a trac ticket from the bugnumber and soup (as returned by gettitle)
+    """
+    span = extra['soup'].find_all('span', {'class' : 'trac-status'})
     if span:
         return span[0].a.get_text()
     else:
@@ -218,6 +224,7 @@ class TicketHtmlTitleProvider(BaseProvider):
         self.url = url
 
     def _gettitle(self, ticketnumber, url=None):
+        """Get the html title from the url given in the class or overridden on call."""
         try:
             response = urllib.request.urlopen('%s%s'%(url or self.url, ticketnumber))
         except urllib.error.HTTPError as e:
@@ -231,16 +238,25 @@ class TicketHtmlTitleProvider(BaseProvider):
         soup = BeautifulSoup(data, 'html.parser')
         title = soup.title.string
 
-        return (title, soup)
+        res = {}
+        res['title'] = title
+        res['soup'] = soup
+        return res
 
 
 class GitlabTitleProvider(TicketHtmlTitleProvider):
     """A ticket information provider that extracts the title
        tag from GitLab issues at $url/$path/-/issues/$ticketnumber."""
-    def __getitem__(self, ticketnumber):
+
+    def _gettitle(self, ticketnumber):
+        log.debug("[%s] have ticketnumber %s"%(self.name, ticketnumber))
         path, ticketnumber = ticketnumber
         url = '%s%s/-/issues/' % (self.url, path)
-        return super().__getitem__(ticketnumber, url=url)
+        res = super()._gettitle(ticketnumber, url=url)
+        res['url'] = url
+        res['path'] = path
+        res['ticketnumber'] = ticketnumber
+        return res
 
 class TorProposalProvider(BaseProvider):
     """Get information on tor proposals from gitweb.torproject.org"""
@@ -315,7 +331,7 @@ class TicketRTProvider(BaseProvider):
         return title
 
 class ReGroupFixup:
-    """ A callable object that extracts a more appropriate string from ticket info
+    """A callable object that extracts a more appropriate string from ticket info
 
     Given a ticket string and a ticket number, returns #<number>: #<x>,
     where x is the first match group of the regex on the given string,
@@ -325,7 +341,7 @@ class ReGroupFixup:
     def __init__(self, groupre):
         self.groupre = groupre
 
-    def __call__(self, i, x):
+    def __call__(self, i, x, extra=None):
         m = re.match(self.groupre, x)
         if m and len(m.groups()) > 0: x = m.group(1)
         return "#%s: %s"%(i, x)

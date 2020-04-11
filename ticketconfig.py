@@ -37,69 +37,69 @@ class TicketConfig:
         p = []
         p.append( h.TicketHtmlTitleProvider( 'trac.torproject.org',
             'https://trac.torproject.org/projects/tor/ticket/',
-            h.ReGroupFixup('.*?\((.*)\).*? Tor Bug Tracker & Wiki$'),
+            fixup=h.ReGroupFixup('.*?\((.*)\).*? Tor Bug Tracker & Wiki$'),
             prefix='tor',
             postfix=' - https://bugs.torproject.org/%s',
             default_re=r'(?<!\w)(?:[tT]or#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{4,})(?:(?=\W)|$)',
             status_finder = h.TracStatusExtractor
             ))
         p.append( h.TorProposalProvider( 'proposal.torproject.org',
-            fixup=lambda i,x: "Prop#%s: %s" % (x, i) ))
+            fixup=lambda i, x: "Prop#%s: %s" % (x, i) ))
         p.append( h.TicketHtmlTitleProvider( 'github.com-tor-ooni-probe-pull',
             'https://github.com/TheTorProject/ooni-probe/pull/',
-            h.ReGroupFixup('.*?(.*) . Pull Request #[0-9]+ . TheTorProject/ooni-probe . GitHub$'),
+            fixup=h.ReGroupFixup('.*?(.*) . Pull Request #[0-9]+ . TheTorProject/ooni-probe . GitHub$'),
             prefix='github-OONI-PR'
             ))
         p.append( h.GitlabTitleProvider( 'gitlab.torproject.org',
             'https://gitlab.torproject.org/',
+            fixup=lambda ticketnumber, title, extra=None: '%s#%s: %s - %s%s'%(extra['path'], extra['ticketnumber'], title, extra['url'], extra['ticketnumber']),
             prefix='gitlabtpo:',
             default_re=r'(?<!\w)(?:gitlabtpo:)(?P<path>\w+/[\w/]*\w)#(?P<number>[0-9]+)(?:(?=\W)|$)',
-            postfix=lambda title, ticketnumber, url='': '%s - %s%s'%(title, url, ticketnumber)
             ))
         p.append( h.TicketHtmlTitleProvider( 'bugs.debian.org',
             'http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=',
-            h.ReGroupFixup('#[0-9]+ - (.*) - Debian Bug report logs$'),
+            fixup=h.ReGroupFixup('#[0-9]+ - (.*) - Debian Bug report logs$'),
             prefix='Debian',
             postfix=' - https://bugs.debian.org/%s',
             default_re=r'(?i)(?<!\w)(?:Deb(?:ian)?#|bug#|https?://bugs.debian.org/|https://bugs.debian.org/cgi-bin/bugreport.cgi\?bug=)([0-9]{3,})(?:(?=\W)|$)'
             ))
         p.append( h.TicketRTProvider( 'rt.debian.org',
             '~/.rtrc-debian',
-            h.ReGroupFixup('[0-9]+: *(.*)$'),
+            fixup=h.ReGroupFixup('[0-9]+: *(.*)$'),
             prefix='DebianRT',
             postfix=' - https://rt.debian.org/%s'
             ))
         p.append( h.TicketHtmlTitleProvider( 'bts.grml.org',
             'http://bts.grml.org/grml/issue',
-            h.ReGroupFixup('Issue [0-9]+: (.*) - GRML issue tracker$'),
+            fixup=h.ReGroupFixup('Issue [0-9]+: (.*) - GRML issue tracker$'),
             prefix='GRML',
             status_finder = h.TracStatusExtractor
             ))
         p.append( h.TicketHtmlTitleProvider( 'munin-monitoring.org',
             'https://github.com/munin-monitoring/munin/issues/',
-            h.ReGroupFixup('.*?(.*) . (?:Issue|Pull Request) #[0-9]+ . munin-monitoring/munin . GitHub$'),
+            fixup=h.ReGroupFixup('.*?(.*) . (?:Issue|Pull Request) #[0-9]+ . munin-monitoring/munin . GitHub$'),
             prefix='munin',
             ))
         p.append( h.TicketHtmlTitleProvider( 'launchpad.net/ubuntu',
             'https://bugs.launchpad.net/ubuntu/+bug/',
-            h.ReGroupFixup('Bug #[0-9]+ .(.*). : Bugs :'),
+            fixup=h.ReGroupFixup('Bug #[0-9]+ .(.*). : Bugs :'),
             prefix='ubuntu'
             ))
         p.append( h.TicketHtmlTitleProvider( 'bugzilla.redhat.com',
             'https://bugzilla.redhat.com/show_bug.cgi?id=',
-            h.ReGroupFixup('Bug [0-9]+ . (.*)$'),
+            fixup=h.ReGroupFixup('Bug [0-9]+ . (.*)$'),
             prefix='redhat'
             ))
         p.append( h.TicketHtmlTitleProvider( 'labs.riseup.net',
             'https://labs.riseup.net/code/issues/',
-            h.ReGroupFixup('[^#]+#[0-9]+: (.*) - RiseupLabs Code Repository$'),
+            fixup=h.ReGroupFixup('[^#]+#[0-9]+: (.*) - RiseupLabs Code Repository$'),
             prefix='Tails',
             postfix=' - https://labs.riseup.net/code/issues/%s',
             default_re=r'(?<!\w)(?:[tT]ails#|https://labs.riseup.net/code/issues/)([0-9]{4,})(?:(?=\W)|$)'
             ))
         p.append( h.TicketHtmlTitleProvider( 'xkcd.com',
             'https://m.xkcd.com/',
-            h.ReGroupFixup('xkcd: (.*)'),
+            fixup=h.ReGroupFixup('xkcd: (.*)'),
             prefix='xkcd',
             postfix=' - https://m.xkcd.com/%s/',
             default_re=r'(?<!\w)(?i)xkcd#?([0-9]{2,})(?:(?=\W)|$)',
