@@ -1,5 +1,5 @@
 ###
-# Copyright (c) 2013, 2014, 2015, 2016 Peter Palfrader <peter@palfrader.org>
+# Copyright (c) 2013, 2014, 2015, 2016, 2020 Peter Palfrader <peter@palfrader.org>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -38,15 +38,38 @@ import fnmatch
 import supybot.log as log
 
 class BaseProvider(object):
+    """A base for most ticket information providers."""
     minRepeat = 1800
     defaultRE = '(?<!\w)#([0-9]{4,})(?:(?=\W)|$)'
     debugChannels = ['#*-test']
 
-    def __init__(self, name, fixup=None, prefix=None, default_re=None, postfix=None):
+    def __init__(self, name, fixup=None, prefix=None, default_re=None, postfix=None, status_finder=None):
+        """Constructs a base base information provider.
+
+        Child classes are then expected to implement _gettitle().
+
+        :param name A name for this provider that identifies it for logging purposes.
+        :param prefix A string to add to the front of the text we print.
+                      If no default_re is provided, we built one from
+                      prefix#<bugnumber>.
+        :param postfix A string to append to the text we print.
+        :param fixup A function that takes a string (the title) and returns
+                     another string we like better for printing.  This is a
+                     more powerful solution than just setting prefix/postfix.
+                     If prefix/postfix are given, and a fixup, prefix/postfix
+                     is done first.
+        :param status_finder A function (taking ticketnumber, *args, **kwargs)
+                            which provides a ticket's status to add to the
+                            title.  One of the kwargs is "extra" and holds
+                            the tuple returned from _gettitle() if any.
+        :param default_re A regex to match.  Should have one matched group that is
+                          the ticketnumber.
+        """
         self.name = name
         self.fixup = fixup
         self.prefix = prefix
         self.postfix = postfix
+        self.status_finder = status_finder
         if default_re is None and self.prefix is not None:
             self.re = r'(?i)(?<!\w)'+self.prefix+r'#([0-9]{2,})(?:(?=\W)|$)'
         else:
@@ -54,45 +77,71 @@ class BaseProvider(object):
         self.channels = {}
         self.lastSent = {}
 
-    def fixup_title(self, title, ticketnumber):
+    def fixup_title(self, title, ticketnumber, *args, **kwargs):
+        """Cleans up title for printing:
+           Replaces multiple-whitespaces with a single space, adds prefix and
+           postfix and then calls the user-supplied fixup function if
+           provided."""
+
         title = re.sub('\s+', ' ', title).strip()
-
-        if self.fixup is not None:
-            title = self.fixup(ticketnumber, title)
-
-        return title
-
-    def __getitem__(self, ticketnumber, *args, **kwargs):
-        title = self._gettitle(ticketnumber, *args, **kwargs)
-        # gettitle may return just a string - the title,
-        # or a tuple of (str, bool) where the latter says
-        # if we already ran the fixup.
-        if isinstance(title, tuple):
-            (title, fixed_up) = title
-        else:
-            (title, fixed_up) = (title, False)
-
-        assert isinstance(title, str)
 
         if self.prefix is not None:
             title = self.prefix + title
-        if not fixed_up:
-            title = self.fixup(title, ticketnumber, *args, **kwargs)
         if self.postfix is not None:
             if callable(self.postfix):
                 title = self.postfix(title, ticketnumber, *args, **kwargs)
             else:
                 title = title + self.postfix%(ticketnumber)
 
+        if self.fixup is not None:
+            title = self.fixup(ticketnumber, title, *args, **kwargs)
+
+        return title
+
+    def _gettitle(self, ticketnumber, *args, **kwargs):
+        """Return a string for ticketnumber, or a tuple whose first
+           element is a string.  The tuple is then handed to status_finder
+           to provide extra info.
+
+        Should be overridden by descendants.
+        """
+        assert(False)
+
+    def __getitem__(self, ticketnumber, *args, **kwargs):
+        """Get information about ticket ticketnumber.  Ticketnumber
+           usually is a string, but it does not have to.
+
+           If it is not a string, then the entire tuple is passed on to
+           gettitle and fixup as an 'extra' keyword, along with any already
+           provided args/kwargs.
+           """
+        title = self._gettitle(ticketnumber, *args, **kwargs)
+
+        if isinstance(title, tuple):
+            kwargs['extra'] = title
+            title = title[0]
+        assert isinstance(title, str)
+
+        title = self.fixup_title(title, ticketnumber, *args, **kwargs)
+
+        if self.status_finder is not None:
+            status = self.status_finder(ticketnumber, *args, **kwargs)
+            if status is not None:
+                title = "%s - [%s]" % (title, status)
+
         return title
 
     def matches(self, msg):
+        """Return all matches (from re.findall) of this provider for this msg."""
         if self.re is None: return []
 
         return re.findall(self.re, msg)
 
     def addChannel(self, channel, regex=None, default=False):
-        """Adds a dedicated trigger regex for this provider for a channel"""
+        """Adds a dedicated trigger regex for this provider for a channel.
+
+        If default is set, this provider will match on #nnnn in this channel.
+        At most one provider should be the default provider in any channel."""
         if channel in self.channels:
             log.warning("[%s] re-adding %s"%(self.name, channel))
         self.channels[channel] = { 're': regex, 'default': default }
@@ -104,6 +153,15 @@ class BaseProvider(object):
         return False
 
     def doPrivmsg(self, tgt, msg):
+        """Handle msg for channel/target tgt.
+
+        This collects all the matches from the default_re and any channel
+        specific matches (default or channel specific regex).
+
+        Then it goes through all the matches, collects the information and
+        sends it to the target.
+        """
+
         if self._do_log(tgt): log.debug("[%s][%s] in doPrivmsg %s"%(self.name, tgt, msg))
         matches = []
         matches += self.matches(msg)
@@ -149,19 +207,15 @@ def TracStatusExtractor(soup):
 class TicketHtmlTitleProvider(BaseProvider):
     """A ticket information provider that extracts the title
        tag from html pages at $url$ticketnumber."""
-    def __init__(self, name, url, fixup=None, prefix=None, default_re=None, postfix=None, status_finder=None):
+
+    def __init__(self, name, url, *args, **kwargs):
         """Constructs a ticket html title provider.
 
         :param url The base url where to find tickets.  The document at
                    ${url}${ticketnumber} should have the appropriate title.
-        :param fixup a function that takes a string (the title) and returns
-                     another string we like better for printing.
-        :param status_finder function to provide a ticket's status to add to the title, given the html soup
         """
-        BaseProvider.__init__(self, name, fixup, prefix=prefix, default_re=default_re, postfix=postfix)
-
+        BaseProvider.__init__(self, name, *args, **kwargs)
         self.url = url
-        self.status_finder = status_finder
 
     def _gettitle(self, ticketnumber, url=None):
         try:
@@ -176,12 +230,8 @@ class TicketHtmlTitleProvider(BaseProvider):
 
         soup = BeautifulSoup(data, 'html.parser')
         title = soup.title.string
-        title = self.fixup_title(title, ticketnumber)
-        if self.status_finder is not None:
-            status = self.status_finder(soup)
-            if status is not None:
-                title = "%s - [%s]" % (title, status)
-        return (title, True)
+
+        return (title, soup)
 
 
 class GitlabTitleProvider(TicketHtmlTitleProvider):
@@ -193,8 +243,10 @@ class GitlabTitleProvider(TicketHtmlTitleProvider):
         return super().__getitem__(ticketnumber, url=url)
 
 class TorProposalProvider(BaseProvider):
-    def __init__(self, name, fixup=None, prefix=None, default_re=None, postfix=None):
-        BaseProvider.__init__(self, name, fixup,  prefix=prefix, default_re=default_re, postfix=postfix)
+    """Get information on tor proposals from gitweb.torproject.org"""
+
+    def __init__(self, name, *args, **kwargs):
+        BaseProvider.__init__(self, name, *args, **kwargs)
 
         self.url = 'https://gitweb.torproject.org/torspec.git/tree/proposals/000-index.txt'
 
@@ -235,8 +287,16 @@ class TorProposalProvider(BaseProvider):
 class TicketRTProvider(BaseProvider):
     """A ticket information provider that returns the title
        of a request-tracker ticket."""
-    def __init__(self, name, rtconfigpath, fixup=None, prefix=None, default_re=None, postfix=None):
-        BaseProvider.__init__(self, name, fixup, prefix=prefix, default_re=default_re, postfix=postfix)
+    def __init__(self, name, rtconfigpath, *args, **kwargs):
+        """Constructs a RT title provider.
+
+        Uses the command line 'rt' client.
+
+        :param rtconfigpath Path to a config for the RT containing server
+                            url, user, and passwd.  This path is passed
+                            on to 'rt' as in an RTCONFIG environment variable.
+        """
+        BaseProvider.__init__(self, name, *args, **kwargs)
 
         self.rtrc = os.path.abspath( os.path.expanduser( rtconfigpath) )
 
@@ -252,12 +312,16 @@ class TicketRTProvider(BaseProvider):
         if title == "No matching results.":
             raise IndexError(title)
 
-        title = self.fixup_title(title, ticketnumber)
-        return (title, True)
-
-
+        return title
 
 class ReGroupFixup:
+    """ A callable object that extracts a more appropriate string from ticket info
+
+    Given a ticket string and a ticket number, returns #<number>: #<x>,
+    where x is the first match group of the regex on the given string,
+    or the given string if no match (group) exists.
+    """
+
     def __init__(self, groupre):
         self.groupre = groupre
 
