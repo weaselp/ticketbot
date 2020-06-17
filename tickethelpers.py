@@ -125,7 +125,7 @@ class BaseProvider(object):
         title = self.fixup_title(title, ticketnumber, **kwargs)
 
         if self.status_finder is not None:
-            status = self.status_finder(ticketnumber, **kwargs)
+            status = self.status_finder(self, ticketnumber, **kwargs)
             if status is not None:
                 title = "%s - [%s]" % (title, status)
 
@@ -197,7 +197,7 @@ class BaseProvider(object):
             self.lastSent[(tgt,m)] = time.time()
             yield item
 
-def TracStatusExtractor(ticketnumber, extra):
+def TracStatusExtractor(provider, ticketnumber, extra):
     """Extracts the status of a trac ticket from the bugnumber and soup (as returned by gettitle)
     """
     span = extra['soup'].find_all('span', {'class' : 'trac-status'})
@@ -206,7 +206,7 @@ def TracStatusExtractor(ticketnumber, extra):
     else:
         return None
 
-def GitLabStatusExtractor(ticketnumber, extra):
+def GitLabStatusExtractor(provider, ticketnumber, extra):
     """Extracts the status of a gitlab issue from the (path, bugnumber) and soup (as returned by gettitle)
     """
     page_header = extra['soup'].find_all('div', {'class': 'detail-page-header'})
@@ -217,7 +217,18 @@ def GitLabStatusExtractor(ticketnumber, extra):
     if len(visible_box) != 1: return None
     visible_box = visible_box[0]
 
-    return visible_box.get_text().strip()
+    res = visible_box.get_text().strip()
+
+    if provider.prefix is not None:
+        links = visible_box.find_all('a')
+        if len(links) == 1:
+            link = links[0]['href']
+            parts = link.split('/-/issues/')
+            if len(parts) == 2:
+                moved_to = provider.prefix + ':' + parts[0] + '#' + parts[1]
+                res += " → " + moved_to
+
+    return res
 
 class TicketHtmlTitleProvider(BaseProvider):
     """A ticket information provider that extracts the title
