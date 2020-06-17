@@ -38,9 +38,9 @@ class TicketConfig:
         p.append( h.TicketHtmlTitleProvider( 'trac.torproject.org',
             'https://trac.torproject.org/projects/tor/ticket/',
             fixup=h.ReGroupFixup('.*?\((.*)\).*? Tor Bug Tracker & Wiki$'),
-            prefix='tor',
+            prefix='tractpo',
             postfix=' - https://bugs.torproject.org/%s',
-            default_re=r'(?<!\w)(?:[tT]or#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{4,})(?:(?=\W)|$)',
+            default_re=r'(?<!\w)(?:tractpo#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{4,})(?:(?=\W)|$)',
             status_finder = h.TracStatusExtractor
             ))
         p.append( h.TorProposalProvider( 'proposal.torproject.org',
@@ -111,7 +111,6 @@ class TicketConfig:
     #addChannel(self, channel, regex=None, default=False):
     def _setup_channels(self):
         for tor in ('#ooni', '#nottor', '#tor*'):
-            self.providers['trac.torproject.org'    ].addChannel(tor, default=True)
             self.providers['gitlab.torproject.org'  ].addChannel(tor, regex=r'(?<!\w)(?P<path>[\w-]+/[\w/-]*\w)#(?P<number>[0-9]+)(?:(?=\W)|$)')
             self.providers['proposal.torproject.org'].addChannel(tor, regex='(?<!\w)[Pp]rop#([0-9]+)(?:(?=\W)|$)')
 
