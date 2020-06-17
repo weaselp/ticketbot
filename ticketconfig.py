@@ -58,6 +58,7 @@ class TicketConfig:
         p.append( h.TicketHtmlTitleProvider( 'gitlab.torproject.org-legacy',
             'https://gitlab.torproject.org/legacy/trac/-/issues/',
             prefix='tor',
+            fixup=h.ReGroupFixup('(.*?) \(#[0-9]+\) . Issues . .*? . GitLab$'),
             default_re=r'(?<!\w)(?:[tT]or#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{4,})(?:(?=\W)|$)',
             postfix=' - https://gitlab.torproject.org/legacy/trac/-/issues/%s',
             ))
