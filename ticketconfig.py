@@ -52,8 +52,8 @@ class TicketConfig:
             ))
         p.append( h.GitlabTitleProvider( 'gitlab.torproject.org',
             'https://gitlab.torproject.org/',
-            prefix='gitlabtpo:',
-            default_re=r'(?<!\w)(?:gitlabtpo:|https://gitlab.torproject.org/)(?P<path>[\w-]+/[\w/-]*\w)(?:#|/-/issues/)(?P<number>[0-9]+)(?:(?=\W)|$)',
+            prefix='tor:',
+            default_re=r'(?<!\w)(?:tor:|gitlabtpo:|https://gitlab.torproject.org/)(?P<path>[\w-]+/[\w/-]*\w)(?:#|/-/issues/)(?P<number>[0-9]+)(?:(?=\W)|$)',
             ))
         p.append( h.TicketHtmlTitleProvider( 'bugs.debian.org',
             'http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=',
