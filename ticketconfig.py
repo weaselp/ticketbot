@@ -59,6 +59,7 @@ class TicketConfig:
             'https://gitlab.torproject.org/legacy/trac/-/issues/',
             prefix='tor',
             default_re=r'(?<!\w)(?:[tT]or#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{4,})(?:(?=\W)|$)',
+            postfix=' - https://gitlab.torproject.org/legacy/trac/-/issues/%s',
             ))
         p.append( h.TicketHtmlTitleProvider( 'bugs.debian.org',
             'http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=',
