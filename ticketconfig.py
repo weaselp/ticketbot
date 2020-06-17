@@ -55,6 +55,7 @@ class TicketConfig:
             prefix='tor:',
             default_re=r'(?<!\w)(?:tor:|gitlabtpo:|https://gitlab.torproject.org/)(?P<path>[\w-]+/[\w/-]*\w)(?:#|/-/issues/)(?P<number>[0-9]+)(?:(?=\W)|$)',
             postfix=' - https://bugs.torproject.org/%s/%s',
+            status_finder = h.GitLabStatusExtractor,
             ))
         p.append( h.TicketHtmlTitleProvider( 'gitlab.torproject.org-legacy',
             'https://gitlab.torproject.org/legacy/trac/-/issues/',
@@ -62,6 +63,7 @@ class TicketConfig:
             fixup=h.ReGroupFixup('(.*?) \(#[0-9]+\) . Issues . .*? . GitLab$'),
             default_re=r'(?<!\w)(?:[tT]or#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{4,})(?:(?=\W)|$)',
             postfix=' - https://bugs.torproject.org/%s',
+            status_finder = h.GitLabStatusExtractor,
             ))
         p.append( h.TicketHtmlTitleProvider( 'bugs.debian.org',
             'http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=',

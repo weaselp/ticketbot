@@ -206,6 +206,19 @@ def TracStatusExtractor(ticketnumber, extra):
     else:
         return None
 
+def GitLabStatusExtractor(ticketnumber, extra):
+    """Extracts the status of a gitlab issue from the (path, bugnumber) and soup (as returned by gettitle)
+    """
+    page_header = extra['soup'].find_all('div', {'class': 'detail-page-header'})
+    if len(page_header) != 1: return None
+    page_header = page_header[0]
+
+    visible_box = [box for box in page_header.find_all('div', {'class': 'status-box'}) if not 'hidden' in box['class']]
+    if len(visible_box) != 1: return None
+    visible_box = visible_box[0]
+
+    return visible_box.get_text().strip()
+
 class TicketHtmlTitleProvider(BaseProvider):
     """A ticket information provider that extracts the title
        tag from html pages at $url$ticketnumber."""
