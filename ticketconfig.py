@@ -55,6 +55,11 @@ class TicketConfig:
             prefix='tor:',
             default_re=r'(?<!\w)(?:tor:|gitlabtpo:|https://gitlab.torproject.org/)(?P<path>[\w-]+/[\w/-]*\w)(?:#|/-/issues/)(?P<number>[0-9]+)(?:(?=\W)|$)',
             ))
+        p.append( h.TicketHtmlTitleProvider( 'gitlab.torproject.org-legacy',
+            'https://gitlab.torproject.org/legacy/trac/-/issues/',
+            prefix='tor',
+            default_re=r'(?<!\w)(?:[tT]or#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{4,})(?:(?=\W)|$)',
+            ))
         p.append( h.TicketHtmlTitleProvider( 'bugs.debian.org',
             'http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=',
             fixup=h.ReGroupFixup('#[0-9]+ - (.*) - Debian Bug report logs$'),
@@ -111,8 +116,9 @@ class TicketConfig:
     #addChannel(self, channel, regex=None, default=False):
     def _setup_channels(self):
         for tor in ('#ooni', '#nottor', '#tor*'):
-            self.providers['gitlab.torproject.org'  ].addChannel(tor, regex=r'(?<!\w)(?P<path>[\w-]+/[\w/-]*\w)#(?P<number>[0-9]+)(?:(?=\W)|$)')
-            self.providers['proposal.torproject.org'].addChannel(tor, regex='(?<!\w)[Pp]rop#([0-9]+)(?:(?=\W)|$)')
+            self.providers['gitlab.torproject.org-legacy'].addChannel(tor, default=True)
+            self.providers['gitlab.torproject.org'       ].addChannel(tor, regex=r'(?<!\w)(?P<path>[\w-]+/[\w/-]*\w)#(?P<number>[0-9]+)(?:(?=\W)|$)')
+            self.providers['proposal.torproject.org'     ].addChannel(tor, regex='(?<!\w)[Pp]rop#([0-9]+)(?:(?=\W)|$)')
 
         self.providers['github.com-tor-ooni-probe-pull'].addChannel('#ooni', regex='(?<!\w)(?:PR#|https://github.com/TheTorProject/ooni-probe/pull/)([0-9]+)(?:(?=\W)|$)')
 
