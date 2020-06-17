@@ -118,7 +118,7 @@ class TicketConfig:
 
     #addChannel(self, channel, regex=None, default=False):
     def _setup_channels(self):
-        for tor in ('#ooni', '#nottor', '#tor*'):
+        for tor in ('#ooni', '#nottor', '#tor*', '#tpo-admin'):
             self.providers['gitlab.torproject.org-legacy'].addChannel(tor, default=True)
             self.providers['gitlab.torproject.org'       ].addChannel(tor, regex=r'(?<!\w)(?P<path>[\w-]+/[\w/-]*\w)#(?P<number>[0-9]+)(?:(?=\W)|$)')
             self.providers['proposal.torproject.org'     ].addChannel(tor, regex='(?<!\w)[Pp]rop#([0-9]+)(?:(?=\W)|$)')
