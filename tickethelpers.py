@@ -223,6 +223,7 @@ def GitLabStatusExtractor(provider, ticketnumber, extra):
         links = visible_box.find_all('a')
         if len(links) == 1:
             link = links[0]['href']
+            if link.startswith('/'): link = link[1:]
             parts = link.split('/-/issues/')
             if len(parts) == 2:
                 moved_to = provider.prefix + ':' + parts[0] + '#' + parts[1]
