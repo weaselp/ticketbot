@@ -261,7 +261,9 @@ class GitlabTitleProvider(TicketHtmlTitleProvider):
         m = re.match('(.*?)\s*(?:\(#[0-9]+\)) \S{1,2} Issues \S{1,2} .+(?: / .+) \S{1,2} GitLab$', title)
         if m and len(m.groups()) > 0: title = m.group(1)
 
-        res = '%s#%s: %s - %s%s'%(extra['path'], extra['ticketnumber'], title, extra['url'], extra['ticketnumber'])
+        # the url and ticketnumber can be added via a postfix, we do not need it here
+        #res = '%s#%s: %s - %s%s'%(extra['path'], extra['ticketnumber'], title, extra['url'], extra['ticketnumber'])
+        res = '%s#%s: %s'%(extra['path'], extra['ticketnumber'], title)
         return res
 
     def _gettitle(self, ticketnumber):
